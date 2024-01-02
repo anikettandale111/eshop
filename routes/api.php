@@ -31,8 +31,10 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('categories', [\App\Http\Controllers\Api\APIController::class, 'categories']);
     // product Listing
     Route::get('products', [\App\Http\Controllers\Api\APIController::class, 'products']);
-    Route::post('logout', [\App\Http\Controllers\Api\AuthController::class, 'logout']);
-
+    // Address Listing
+    Route::get('address', [\App\Http\Controllers\Api\APIController::class, 'listAddress']);
+    // Address add OR update 
+    Route::post('addupdateadd', [\App\Http\Controllers\Api\APIController::class, 'addUpdateaddress']);
 });
 
 //product review

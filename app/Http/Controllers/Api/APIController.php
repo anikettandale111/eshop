@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use App\Models\Otp;
+use App\Models\ShippingAddress;
 use App\Models\Category;
 use App\Models\Product;
 use Hash;
@@ -175,5 +176,48 @@ class APIController extends Controller
     {
         $products = Product::orderBy('id', 'DESC')->get();
         return response()->json(['message' => 'Products Listed successfully', 'products' => $products], 200);
+    }
+    public function listAddress(Request $request)
+    {
+        $user_id = $request->user();
+        $shippingAddress = ShippingAddress::where('user_id', $user_id->id)->get();
+        return response()->json(['message' => 'Address Listed successfully', 'address' => $shippingAddress], 200);
+    }
+    public function addUpdateaddress(Request $request,$id='')
+    {
+        $user_id = $request->user();
+        try{
+            $this->validate($request, [
+                // 'country' => 'string|nullable',
+                'address' => 'string|required',
+                'address2' => 'string|nullable',
+                // 'state' => 'string|nullable',
+                'postcode' => 'numeric|nullable'
+            ]);
+            $id = isset($request->id) ? $request->id : null;
+            if(isset($id) && $id != null){
+                $shippingAddress = ShippingAddress::where('id', $id)->update(['postcode' => $request->postcode, 'address' => $request->address, 'address2' => $request->address2, 'country' => 'India', 'state' => 'Maharashtra']);
+                return response()->json(['message' => 'Address Updated successfully'], 200);
+            }else{
+                $shippingAddress = new ShippingAddress;
+                $shippingAddress->country = 'India';
+                $shippingAddress->state = 'Maharashtra';
+                $shippingAddress->user_id = $user_id->id;
+                $shippingAddress->postcode = $request->postcode;
+                $shippingAddress->address = $request->address;
+                $shippingAddress->address2 = $request->address2;
+                $shippingAddress->scountry = $request->address;
+                $shippingAddress->spostcode  = $request->spostcode;
+                $shippingAddress->sstate  = $request->sstate;
+                $shippingAddress->saddress  = $request->saddress;
+                $shippingAddress->saddress  = $request->saddress;
+                $shippingAddress->saddress2  = $request->saddress2;
+                $shippingAddress->save();
+                return response()->json(['message' => 'New Address Added successfully'], 200);
+            }
+        } catch (ValidationException $e) {
+            // Validation failed, return JSON response with errors
+            return response()->json(['message' => 'Validation failed', 'errors' => $e->errors()], 422);
+        }
     }
 }
