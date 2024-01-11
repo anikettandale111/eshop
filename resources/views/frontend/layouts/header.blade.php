@@ -4,7 +4,8 @@
     <div class="row align-items-center">
       <div class="col-lg-6 col-md-12">
         <ul class="header-contact-info">
-          <li class="text-uppercase">Express Delivery and Free Turns Within {{get_settings('delivery_time')}} Days</li>
+          <!-- <li class="text-uppercase">Express Delivery and Free Turns Within {{get_settings('delivery_time')}} Days</li> -->
+          <li class="text-uppercase">Join with us</li>
         </ul>
       </div>
       <div class="col-lg-6 col-md-12">
