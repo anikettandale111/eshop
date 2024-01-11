@@ -26,6 +26,8 @@ Route::post('/login', [\App\Http\Controllers\Api\APIController::class, 'login'])
 
 Route::group(['middleware' => ['auth:api']], function () {
     Route::get('/testcallapi', [\App\Http\Controllers\Api\APIController::class, 'testApiCall']);
+    Route::get('banners', [\App\Http\Controllers\Api\APIController::class, 'listBanners']);
+    // Profile UPdate
     Route::post('/profileupdate', [\App\Http\Controllers\Api\APIController::class, 'profileUpdate']);
     // category Listing
     Route::get('categories', [\App\Http\Controllers\Api\APIController::class, 'categories']);
@@ -35,6 +37,20 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('address', [\App\Http\Controllers\Api\APIController::class, 'listAddress']);
     // Address add OR update 
     Route::post('addupdateadd', [\App\Http\Controllers\Api\APIController::class, 'addUpdateaddress']);
+    // Product By Category
+    Route::get('category/{catid}', [\App\Http\Controllers\Api\APIController::class, 'productByCategory']);
+    // Product Details
+    Route::get('product-detail/{pslug}/', [\App\Http\Controllers\Api\APIController::class, 'productDetail']);
+    // Get Cart Details
+    Route::get('cart', [\App\Http\Controllers\Api\APIController::class, 'cart']);
+    // Get Cart Details
+    Route::post('single/cart/store', [\App\Http\Controllers\Api\APIController::class, 'singleCartStore']);
+    // Delete Cart
+    Route::post('cart/delete', [\App\Http\Controllers\Api\APIController::class, 'cartDelete']);
+    // Update Cart
+    Route::post('cart/update', [\App\Http\Controllers\Api\APIController::class, 'cartUpdate']);
+    // Add to Cart
+    Route::post('cart/add', [\App\Http\Controllers\Api\APIController::class, 'cartAdd']);
 });
 
 //product review

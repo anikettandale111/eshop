@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
 use App\Models\Otp;
+use App\Models\Banner;
+use App\Models\AttributeValue;
 use App\Models\ShippingAddress;
 use App\Models\Category;
 use App\Models\Product;
@@ -27,6 +29,11 @@ class APIController extends Controller
         } else {
             return response()->json(['message' => 'Invalid user or authentication failed'], 401);
         }
+    }
+    public function listBanners()
+    {
+        $banners=Banner::where(['banner_type'=>'home','status'=>'active'])->orderBy('id','DESC')->get();
+        return response()->json(['message' => '','banners'=>$banners], 200);
     }
     public function testApiCall()
     {
@@ -177,16 +184,109 @@ class APIController extends Controller
         $products = Product::orderBy('id', 'DESC')->get();
         return response()->json(['message' => 'Products Listed successfully', 'products' => $products], 200);
     }
+    public function productByCategory($catid)
+    {
+        $products = Product::where(['status' => 'active', 'cat_ids' => $catid])->first();
+        return response()->json(['message' => 'Products Listed successfully', 'products' => $products], 200);
+    }
+    public function productDetail(Request $request, $pslug)
+    {
+        $product = Product::with('rel_prods')->where('slug', $pslug)->first();
+        $reviews = $product->reviews()->orderBy('id', 'DESC')->get();
+        $display_reviews = $product->reviews()->take(2)->latest()->get();
+        $recent_view = null;
+        if ($product) {
+            return response()->json(['message' => 'Products Details get successfully', 'display_reviews' => $display_reviews, 'products' => $product, 'reviews' => $reviews], 200);
+        } else {
+            return response()->json(['message' => 'Product detail not found'], 201);
+        }
+    }
+    public function cartAdd(Request $request)
+    {
+        $product = Product::find($request->id);
+        $data = array();
+        $data['id'] = $product->id;
+        $str = '';
+        $variations = [];
+        $price = 0;
+        $additional_charge = 0;
+
+        //check the color enabled or disabled for the product
+        if ($request->has('color')) {
+            $data['color'] = $request['color'];
+            $str = AttributeValue::where('color_code', $request['color'])->first()->name;
+            $variations['color'] = str_replace(' ', '_', $str);
+        }
+        //Gets all the choice values of customer choice option and generate a string like Black-S-Cotton
+        if (json_decode($product->choice_options)) {
+            foreach (json_decode($product->choice_options) as $key => $choice) {
+                //                $data[$choice->name] = $request[$choice->name];
+                //                $variations[$choice->title] = $request[$choice->name];
+                if ($str != null) {
+                    $str .= '-' . str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
+                } else {
+                    $str .= str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
+                }
+            }
+        }
+
+
+        $data['variation'] = $str;
+        if ($str) {
+            $product_stock = $product->stocks->where('variant', $str)->first();
+            $price += $product_stock->price;
+            $quantity = $product_stock->qty;
+        } else {
+            $price += $product->purchase_price;
+            $quantity = $product->stock;
+        }
+
+        if ($request->session()->has('cart')) {
+            if (count($request->session()->get('cart')) > 0) {
+                foreach ($request->session()->get('cart') as $key => $cartItem) {
+                    if ($cartItem['id'] == $request['id'] && $cartItem['variation'] == $str) {
+                        $response['message'] = '<i  class="fas fa-exclamation-triangle"></i> Oops: you have already added in shopping cart';
+                        $response['status'] = 'already';
+                        return $response;
+                    }
+                }
+            }
+        }
+
+        $shipping_id = 1;
+        $shipping_cost = 0;
+        $data['product_id'] = $product->id;
+        $data['quantity'] = $request['quantity'];
+        $data['slug'] = $product->slug;
+        $data['title'] = $product->title;
+        $data['discount'] = \Helper::get_product_discount($product, $price);
+        $data['image'] = $product->thumbnail_image;
+        $data['price'] = $price + ($additional_charge);
+        $data['subtotal'] = $data['quantity'] * $data['price'];
+        $data['shipping_method_id'] = $shipping_id;
+        $data['shipping_cost'] = $shipping_cost;
+
+        if ($request->session()->has('cart')) {
+            $cart = $request->session()->get('cart', collect([]));
+            $cart->push($data);
+        } else {
+            $cart = collect([$data]);
+            $request->session()->put('cart', $cart);
+        }
+
+
+        $response['data'] = $cart;
+    }
     public function listAddress(Request $request)
     {
         $user_id = $request->user();
         $shippingAddress = ShippingAddress::where('user_id', $user_id->id)->get();
         return response()->json(['message' => 'Address Listed successfully', 'address' => $shippingAddress], 200);
     }
-    public function addUpdateaddress(Request $request,$id='')
+    public function addUpdateaddress(Request $request, $id = '')
     {
         $user_id = $request->user();
-        try{
+        try {
             $this->validate($request, [
                 // 'country' => 'string|nullable',
                 'address' => 'string|required',
@@ -195,10 +295,10 @@ class APIController extends Controller
                 'postcode' => 'numeric|nullable'
             ]);
             $id = isset($request->id) ? $request->id : null;
-            if(isset($id) && $id != null){
+            if (isset($id) && $id != null) {
                 $shippingAddress = ShippingAddress::where('id', $id)->update(['postcode' => $request->postcode, 'address' => $request->address, 'address2' => $request->address2, 'country' => 'India', 'state' => 'Maharashtra']);
                 return response()->json(['message' => 'Address Updated successfully'], 200);
-            }else{
+            } else {
                 $shippingAddress = new ShippingAddress;
                 $shippingAddress->country = 'India';
                 $shippingAddress->state = 'Maharashtra';
