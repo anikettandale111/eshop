@@ -55,7 +55,7 @@
                 <div class="collapse navbar-collapse mean-menu">
                     <ul class="navbar-nav">
                         @php
-                            $categories=\App\Models\Category::with('subcategories')->where(['status'=>'active','is_menu'=>1,'level'=>0,'parent_id'=>0])->limit(6)->orderBy('id','DESC')->get()
+                            $categories=\App\Models\Category::with('subcategories')->where(['status'=>'active','is_menu'=>1,'level'=>0,'parent_id'=>0])->limit(6)->orderBy('id','ASC')->get()
                         @endphp
                         @if(count($categories)>0)
                             @foreach($categories->sortBy('order') as $cat)

@@ -15,28 +15,6 @@
           </div>
         </div>
         <div class="col-lg-3 col-md-6 col-sm-12">
-          <div class="single-footer-widget">
-            <a class="logo-wrapper d-none d-md-block" href="{{route('home')}}">
-              @if(get_settings('logo'))
-              <img src="{{asset('frontend/assets/images/logo.svg')}}" alt="logo">
-              @else
-              <img src="{{asset(get_settings('logo'))}}" alt="logo">
-              @endif
-            </a>
-            <h6 class="d-none d-md-flex font-weight-bold mt-5">Subscribe</h6>
-            <h6 class="d-flex d-md-none font-weight-bold mt-5">Subscribe Newsletter</h6>
-            <div class="footer-newsletter-box mt-3">
-
-              <div class="input-group mb-3">
-                <input type="email" class="form-control input-newsletter" placeholder="Enter Your Email" name="s_email" required autocomplete="off">
-                <div class="input-group-prepend">
-                  <button type="button" class="input-group-text subscribe-btn"> <i class='bx bx-right-arrow-alt'></i> </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3 col-md-6 col-sm-12">
           <div class="single-footer-widget pl-4 footer__about-us">
             <h3>About Us</h3>
             <div class="d-flex align-items-center">
@@ -89,7 +67,11 @@
                 </p>
               </li>
             </ul>
-            <h6 class="font-weight-bold mt-4">Follow us</h6>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6 d-none d-md-block">
+          <div class="single-footer-widget footer-contact">
+            <h3>Follow us</h3>
             <ul class="social-link">
               <li><a href="{{get_settings('facebook_url')}}" class="d-block" target="_blank"><i class='bx bxl-facebook'></i></a></li>
               <li><a href="{{get_settings('twitter_url')}}" class="d-block" target="_blank"><i class='bx bxl-twitter'></i></a></li>
@@ -99,23 +81,6 @@
               </li>
             </ul>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="footer-bottom-area">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-12 col-md-12">
-          <ul class="payment-types">
-            <li><a href="javascript:;"><img width="100px" src="{{asset('frontend/assets/images/payments/paypal.svg')}}" alt="image"></a>
-            </li>
-            <li><a href="javascript:;"><img width="100px" src="{{asset('frontend/assets/images/payments/stripe.svg')}}" alt="image"></a>
-            </li>
-            <li><a href="javascript:;"><img width="100px" src="{{asset('frontend/assets/images/payments/razor.png')}}" alt="image"></a></li>
-            <li><a href="javascript:;"><img width="100px" src="{{asset('frontend/assets/images/payments/cod.jpg')}}" alt="image"></a>
-            </li>
-          </ul>
         </div>
       </div>
     </div>
@@ -135,59 +100,58 @@
     $(document).on('click', '.subscribe-btn', function() {
       var email = $('input[name="s_email"]').val();
       $.ajax({
-        url: "{{ route('subscribe') }}"
-        , method: "POST"
-        , data: {
-          email: email
-          , _token: "{{csrf_token()}}"
-        }
-        , success: function(response) {
+        url: "{{ route('subscribe') }}",
+        method: "POST",
+        data: {
+          email: email,
+          _token: "{{csrf_token()}}"
+        },
+        success: function(response) {
           if (response.status) {
             $('input[name="s_email"]').val(" ");
             $.notify({
-              title: '<strong>Success: </strong>'
-              , message: response['msg']
-            , }, {
-              type: 'info'
-              , allow_dismiss: false
-              , delay: 2800
-              , animate: {
-                enter: 'animated flipInY'
-                , exit: 'animated flipOutX'
-              }
-              , onShow: function() {
+              title: '<strong>Success: </strong>',
+              message: response['msg'],
+            }, {
+              type: 'info',
+              allow_dismiss: false,
+              delay: 2800,
+              animate: {
+                enter: 'animated flipInY',
+                exit: 'animated flipOutX'
+              },
+              onShow: function() {
                 this.css({
-                  'width': 'auto'
-                  , 'height': 'auto'
+                  'width': 'auto',
+                  'height': 'auto'
                 });
-              }
-            , });
+              },
+            });
           } else {
             $.notify({
-              title: '<strong>Sorry: </strong>'
-              , message: response['msg']
-            , }, {
-              type: 'danger'
-              , allow_dismiss: false
-              , delay: 2800
-              , animate: {
-                enter: 'animated flipInY'
-                , exit: 'animated flipOutX'
-              }
-              , onShow: function() {
+              title: '<strong>Sorry: </strong>',
+              message: response['msg'],
+            }, {
+              type: 'danger',
+              allow_dismiss: false,
+              delay: 2800,
+              animate: {
+                enter: 'animated flipInY',
+                exit: 'animated flipOutX'
+              },
+              onShow: function() {
                 this.css({
-                  'width': 'auto'
-                  , 'height': 'auto'
+                  'width': 'auto',
+                  'height': 'auto'
                 });
-              }
-            , })
+              },
+            })
           }
         }
       });
 
     });
   })(jQuery)
-
 </script>
 
 
