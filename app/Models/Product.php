@@ -50,7 +50,7 @@ class Product extends Model
 
 
     public function attributes(){
-        return $this->hasMany(ProductAttribute::class);
+        return $this->hasMany(ProductAttribute::class,'attribute_id','attributes');
     }
 
     public function attribute_values(){

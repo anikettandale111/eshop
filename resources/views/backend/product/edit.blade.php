@@ -80,7 +80,7 @@
                                         </div>
 
                                         @if (\App\Models\Attribute::count() > 0)
-                                             <div class="col-6">
+                                             <!-- <div class="col-6">
                                                     <div class="d-flex">
                                                         <label  class="form-label" for="">Color : </label>
 
@@ -97,7 +97,7 @@
                                                             @endforeach
                                                         @endif
                                                     </select>
-                                                </div>
+                                                </div> -->
                                             <div class="col-6">
                                                 <div class="form-group">
                                                     <div class="d-flex">

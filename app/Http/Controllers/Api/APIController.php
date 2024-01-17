@@ -32,8 +32,8 @@ class APIController extends Controller
     }
     public function listBanners()
     {
-        $banners=Banner::where(['banner_type'=>'home','status'=>'active'])->orderBy('id','DESC')->get();
-        return response()->json(['message' => '','banners'=>$banners], 200);
+        $banners = Banner::where(['banner_type' => 'home', 'status' => 'active'])->orderBy('id', 'DESC')->get();
+        return response()->json(['message' => '', 'banners' => $banners], 200);
     }
     public function testApiCall()
     {
@@ -191,7 +191,7 @@ class APIController extends Controller
     }
     public function productDetail(Request $request, $pslug)
     {
-        $product = Product::with('rel_prods')->where('slug', $pslug)->first();
+        $product = Product::with('stocks','rel_prods')->where('slug', $pslug)->first();
         $reviews = $product->reviews()->orderBy('id', 'DESC')->get();
         $display_reviews = $product->reviews()->take(2)->latest()->get();
         $recent_view = null;
@@ -200,6 +200,12 @@ class APIController extends Controller
         } else {
             return response()->json(['message' => 'Product detail not found'], 201);
         }
+    }
+    public function listAddress(Request $request)
+    {
+        $user_id = $request->user();
+        $shippingAddress = ShippingAddress::where('user_id', $user_id->id)->get();
+        return response()->json(['message' => 'Address Listed successfully', 'address' => $shippingAddress], 200);
     }
     public function cartAdd(Request $request)
     {
@@ -230,7 +236,6 @@ class APIController extends Controller
             }
         }
 
-
         $data['variation'] = $str;
         if ($str) {
             $product_stock = $product->stocks->where('variant', $str)->first();
@@ -252,7 +257,6 @@ class APIController extends Controller
                 }
             }
         }
-
         $shipping_id = 1;
         $shipping_cost = 0;
         $data['product_id'] = $product->id;
@@ -274,14 +278,49 @@ class APIController extends Controller
             $request->session()->put('cart', $cart);
         }
 
-
-        $response['data'] = $cart;
+        return response()->json(['message' => 'Address Listed successfully', 'address' => $cart], 200);
     }
-    public function listAddress(Request $request)
+    public function cartUpdate(Request $request)
     {
-        $user_id = $request->user();
-        $shippingAddress = ShippingAddress::where('user_id', $user_id->id)->get();
-        return response()->json(['message' => 'Address Listed successfully', 'address' => $shippingAddress], 200);
+        $cart = $request->session()->get('cart', collect([]));
+        $cart = $cart->map(function ($object, $key) use ($request) {
+            if ($key == $request->key) {
+                $object['quantity'] = $request->quantity;
+            }
+            return $object;
+        });
+
+        $request->session()->put('cart', $cart);
+
+        $this->couponAppliedOnUpdatedCart();
+        if ($request->ajax()) {
+            $cart_list = view('frontend.layouts._cart-lists')->render();
+            $response['status'] = true;
+            $response['message'] = "Cart quantity successfully updated";
+            $response['cart_list'] = $cart_list;
+        }
+        return $response;
+    }
+    public function cartDelete(Request $request)
+    {
+        if ($request->session()->has('cart')) {
+            $cart = $request->session()->get('cart', collect([]));
+            $cart->forget($request->key);
+            $request->session()->put('cart', $cart);
+        }
+
+        // COUPON UPDATE HERE
+        $this->couponAppliedOnUpdatedCart();
+
+        if ($request->ajax()) {
+            $header = view('frontend.layouts.header')->render();
+            $response['header'] = $header;
+            $cart_list = view('frontend.layouts._cart-lists')->render();
+            $response['status'] = true;
+            $response['message'] = "Cart quantity successfully removed";
+            $response['cart_list'] = $cart_list;
+        }
+        return $response;
     }
     public function addUpdateaddress(Request $request, $id = '')
     {

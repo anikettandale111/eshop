@@ -68,28 +68,13 @@
                                                 @endforeach
                                             </select>
                                         </div>
-
                                     </div>
 
-
-{{--                                    <div class="row mb-4">--}}
-{{--                                        <div class="col-6">--}}
-{{--                                            <label>Min Qty *</label>--}}
-{{--                                            <input type="number" placeholder="Enter min qty" class="form-control" name="min_qty" value="1" >--}}
-{{--                                        </div>--}}
-{{--                                        <div class="col-6">--}}
-{{--                                            <label>Unit </label>--}}
-{{--                                            <select name="unit"  class="form-control form-select select2" data-bs-placeholder="Select Unit">--}}
-{{--                                                @foreach(Helper::units() as $item)--}}
-{{--                                                    <option value="{{$item}}">{{$item}}</option>--}}
-{{--                                                @endforeach--}}
-{{--                                            </select>--}}
-{{--                                        </div>--}}
-{{--                                    </div>--}}
+                                    <input type="hidden" placeholder="Enter min qty" class="form-control" name="min_qty" value="1" >
                                     @if (\App\Models\Attribute::count() > 0)
 
                                     <div class="row ">
-                                        <div class="col-6">
+                                        <!-- <div class="col-6">
                                             <div class="d-flex">
                                                 <label for="">Color : </label>
 
@@ -107,7 +92,7 @@
                                                 @endif
 
                                             </select>
-                                        </div>
+                                        </div> -->
                                         <div class="col-6">
                                             <div class="form-group">
                                                 <div class="d-flex">
