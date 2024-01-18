@@ -203,20 +203,24 @@ class APIController extends Controller
     }
     public function listAddress(Request $request)
     {
-        $user_id = $request->user();
+         $user_id = $request->user();
         $shippingAddress = ShippingAddress::where('user_id', $user_id->id)->get();
         return response()->json(['message' => 'Address Listed successfully', 'address' => $shippingAddress], 200);
     }
     public function cartAdd(Request $request)
     {
+        // Make cart empty
+        // if ($request->session()->has('cart_'.Auth::user()->id)) {
+        //     $request->session()->forget('cart_' . Auth::user()->id);
+        // }
         $product = Product::find($request->id);
         $data = array();
         $data['id'] = $product->id;
-        $str = '';
+        $str = (isset($request->variant) && $request->variant != null) ? $request->variant : '';
         $variations = [];
         $price = 0;
         $additional_charge = 0;
-
+        
         //check the color enabled or disabled for the product
         if ($request->has('color')) {
             $data['color'] = $request['color'];
@@ -224,35 +228,42 @@ class APIController extends Controller
             $variations['color'] = str_replace(' ', '_', $str);
         }
         //Gets all the choice values of customer choice option and generate a string like Black-S-Cotton
-        if (json_decode($product->choice_options)) {
-            foreach (json_decode($product->choice_options) as $key => $choice) {
-                //                $data[$choice->name] = $request[$choice->name];
-                //                $variations[$choice->title] = $request[$choice->name];
-                if ($str != null) {
-                    $str .= '-' . str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
-                } else {
-                    $str .= str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
-                }
-            }
-        }
+        // if (json_decode($product->choice_options)) {
+        //     foreach (json_decode($product->choice_options) as $key => $choice) {
+        //         //                $data[$choice->name] = $request[$choice->name];
+        //         //                $variations[$choice->title] = $request[$choice->name];
+        //         if ($str != null) {
+        //             $str .= '-' . str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
+        //         } else {
+        //             $str .= str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
+        //         }
+        //     }
+        // }
 
         $data['variation'] = $str;
         if ($str) {
             $product_stock = $product->stocks->where('variant', $str)->first();
-            $price += $product_stock->price;
-            $quantity = $product_stock->qty;
+            if($product_stock){
+                $price += $product_stock->price;
+                $quantity = $product_stock->qty;
+            }else{
+                return response()->json(['message' => 'Sorry This is Out of stock'], 200);
+            }
         } else {
             $price += $product->purchase_price;
             $quantity = $product->stock;
         }
 
-        if ($request->session()->has('cart')) {
-            if (count($request->session()->get('cart')) > 0) {
-                foreach ($request->session()->get('cart') as $key => $cartItem) {
+        if ($request->session()->has('cart_'.Auth::user()->id)) {
+            if (count($request->session()->get('cart_'.Auth::user()->id)) > 0) {
+                foreach ($request->session()->get('cart_'.Auth::user()->id) as $key => $cartItem) {
                     if ($cartItem['id'] == $request['id'] && $cartItem['variation'] == $str) {
-                        $response['message'] = '<i  class="fas fa-exclamation-triangle"></i> Oops: you have already added in shopping cart';
-                        $response['status'] = 'already';
-                        return $response;
+                        unset($request->session()->get('cart_'.Auth::user()->id)[$key]);
+                        // $cartItem['id'] = $request->quantity;
+                        // $response['message'] = '<i  class="fas fa-exclamation-triangle"></i> Oops: you have already added in shopping cart';
+                        // $cart = $request->session()->get('cart_'.Auth::user()->id, collect([]));
+                        // $response['status'] = $cart;
+                        // return json_encode($response);
                     }
                 }
             }
@@ -263,26 +274,27 @@ class APIController extends Controller
         $data['quantity'] = $request['quantity'];
         $data['slug'] = $product->slug;
         $data['title'] = $product->title;
-        $data['discount'] = \Helper::get_product_discount($product, $price);
+        $data['discount'] = $data['quantity'] * \Helper::get_product_discount($product, $price);
         $data['image'] = $product->thumbnail_image;
         $data['price'] = $price + ($additional_charge);
-        $data['subtotal'] = $data['quantity'] * $data['price'];
+        $data['subtotal'] = ($data['quantity'] * $data['price']) - $data['discount'];
         $data['shipping_method_id'] = $shipping_id;
         $data['shipping_cost'] = $shipping_cost;
-
-        if ($request->session()->has('cart')) {
-            $cart = $request->session()->get('cart', collect([]));
+        
+        if ($request->session()->has('cart_'.Auth::user()->id)) {
+            $cart = $request->session()->get('cart_'.Auth::user()->id, collect([]));
+            $cart['cart_total'] = $data['subtotal'];
             $cart->push($data);
         } else {
+            $cart['cart_total'] = $data['subtotal'];
             $cart = collect([$data]);
-            $request->session()->put('cart', $cart);
+            $request->session()->put('cart_'.Auth::user()->id, $cart);
         }
-
-        return response()->json(['message' => 'Address Listed successfully', 'address' => $cart], 200);
+        return response()->json(['message' => 'Product Added to Cart', 'cart' => $cart], 200);
     }
     public function cartUpdate(Request $request)
     {
-        $cart = $request->session()->get('cart', collect([]));
+        $cart = $request->session()->get('cart_'.Auth::user()->id, collect([]));
         $cart = $cart->map(function ($object, $key) use ($request) {
             if ($key == $request->key) {
                 $object['quantity'] = $request->quantity;
@@ -290,7 +302,7 @@ class APIController extends Controller
             return $object;
         });
 
-        $request->session()->put('cart', $cart);
+        $request->session()->put('cart_'.Auth::user()->id, $cart);
 
         $this->couponAppliedOnUpdatedCart();
         if ($request->ajax()) {
@@ -303,24 +315,28 @@ class APIController extends Controller
     }
     public function cartDelete(Request $request)
     {
-        if ($request->session()->has('cart')) {
-            $cart = $request->session()->get('cart', collect([]));
-            $cart->forget($request->key);
-            $request->session()->put('cart', $cart);
+        if ($request->session()->has('cart_'.Auth::user()->id)) {
+            $request->session()->forget('cart_' . Auth::user()->id);
         }
+        return response()->json(['message' => 'Your Cart is empty now.'], 200);
+        // if ($request->session()->has('cart_'.Auth::user()->id)) {
+        //     $cart = $request->session()->get('cart_'.Auth::user()->id, collect([]));
+        //     $cart->forget($request->key);
+        //     $request->session()->put('cart_'.Auth::user()->id, $cart);
+        // }
 
-        // COUPON UPDATE HERE
-        $this->couponAppliedOnUpdatedCart();
+        // // COUPON UPDATE HERE
+        // $this->couponAppliedOnUpdatedCart();
 
-        if ($request->ajax()) {
-            $header = view('frontend.layouts.header')->render();
-            $response['header'] = $header;
-            $cart_list = view('frontend.layouts._cart-lists')->render();
-            $response['status'] = true;
-            $response['message'] = "Cart quantity successfully removed";
-            $response['cart_list'] = $cart_list;
-        }
-        return $response;
+        // if ($request->ajax()) {
+        //     $header = view('frontend.layouts.header')->render();
+        //     $response['header'] = $header;
+        //     $cart_list = view('frontend.layouts._cart-lists')->render();
+        //     $response['status'] = true;
+        //     $response['message'] = "Cart quantity successfully removed";
+        //     $response['cart_list'] = $cart_list;
+        // }
+        // return $response;
     }
     public function addUpdateaddress(Request $request, $id = '')
     {
