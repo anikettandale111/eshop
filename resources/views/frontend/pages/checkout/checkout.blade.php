@@ -162,7 +162,7 @@
             @endif
 
             $.ajax({
-                url: '{{ route('set.shipping.method') }}',
+                url: '{{ route("set.shipping.method") }}',
                 dataType: 'json',
                 type: 'GET',
                 data: {

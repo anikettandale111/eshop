@@ -207,7 +207,7 @@ class ProductManagerController extends Controller
             $products = $products->whereIn('cat_ids', $category_ids);
         }
 
-        $color_id = Attribute::where('has_color', 1)->first()->id;
+        $color_id = Attribute::where('has_color', 0)->first()->id;
         $product_colors_values = ProductAttributeValue::where('attribute_id', $color_id)->pluck('attribute_value_id');
         $attribute_with_color = AttributeValue::whereIn('id', $product_colors_values)->get();
 
@@ -235,7 +235,7 @@ class ProductManagerController extends Controller
 
     public function productDetail(Request $request, $slug)
     {
-        $product = Product::with('rel_prods')->where('slug', $slug)->first();
+        $product = Product::with('stocks','rel_prods')->where('slug', $slug)->first();
         $reviews = $product->reviews()->orderBy('id', 'DESC')->get();
         $display_reviews = $product->reviews()->take(2)->latest()->get();
         $recent_view = null;
@@ -353,7 +353,7 @@ class ProductManagerController extends Controller
         }
 
 
-        $color_id = Attribute::where('has_color', 1)->first()->id;
+        $color_id = Attribute::where('has_color', 0)->first()->id;
         $product_colors_values = ProductAttributeValue::where('attribute_id', $color_id)->pluck('attribute_value_id');
         $attribute_with_color = AttributeValue::whereIn('id', $product_colors_values)->get();
 

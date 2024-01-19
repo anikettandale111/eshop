@@ -46,11 +46,13 @@ Route::group(['middleware' => ['auth:api']], function () {
     // Get Cart Details
     Route::post('single/cart/store', [\App\Http\Controllers\Api\APIController::class, 'singleCartStore']);
     // Delete Cart
-    Route::post('cart/delete', [\App\Http\Controllers\Api\APIController::class, 'cartDelete']);
+    Route::get('cart/delete/{id?}/{var?}', [\App\Http\Controllers\Api\APIController::class, 'cartDelete']);
     // Update Cart
     Route::post('cart/update', [\App\Http\Controllers\Api\APIController::class, 'cartUpdate']);
     // Add to Cart
     Route::post('cart/add', [\App\Http\Controllers\Api\APIController::class, 'cartAdd']);
+    // Checkout
+    Route::post('checkout', [\App\Http\Controllers\Api\APIController::class, 'checkoutStore']);
 });
 
 //product review

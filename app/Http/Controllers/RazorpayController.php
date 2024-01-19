@@ -22,7 +22,7 @@ class RazorpayController extends Controller
         $input = $request->all();
         $api = new Api(env('RAZOR_KEY'), env('RAZOR_SECRET'));
         $payment = $api->payment->fetch($input['razorpay_payment_id']);
-
+        
         if(count($input)  && !empty($input['razorpay_payment_id']))
         {
             $payment_detalis = null;

@@ -1,139 +1,124 @@
 <form>
     <div class="cart-table table-responsive">
         @if (session()->has('cart') && count(session()->get('cart')) > 0)
-            <table class="table table-bordered">
-                <thead>
+        <table class="table table-bordered">
+            <thead>
                 <tr>
                     <th scope="col">Photo</th>
                     <th scope="col" width="30%">Description</th>
+                    <th scope="col">Package</th>
                     <th scope="col">Price</th>
                     <th scope="col">Qty</th>
                     <th scope="col">Total</th>
                 </tr>
-                </thead>
-                <tbody>
-
+            </thead>
+            <tbody>
+                @if(session()->has('cart'))
                 @foreach (session('cart') as $key => $cartItem)
-                    @php
-                        $product = \App\Models\Product::find($cartItem['product_id']);
-                        $product_stock = $product->stocks->where('variant', $cartItem['variation'])->first();
-                        $product_name_with_choice = $product->title;
-                        if ($cartItem['variation'] != null) {
-                            $product_name_with_choice = $product->title . ' - ' . $cartItem['variation'];
-                        }
-                    @endphp
-                    <tr>
-                        <td class="product-thumbnail">
-                            <a href="{{ route('product.detail', $cartItem['slug']) }}">
-                                <img style="border:1px solid #ddd"
-                                     src="{{ $cartItem['image'] != null ? asset($cartItem['image']) : Helper::DefaultImage() }}"
-                                     alt="item">
-                            </a>
-                        </td>
-                        <td class="product-name">
-                            <a href="{{ route('product.detail', $cartItem['slug']) }}"
-                               target="_blank">{{ ucfirst($product_name_with_choice) }}
-                            </a>
+                @php
+                $product = \App\Models\Product::find($cartItem['product_id']);
+                $product_stock = $product->stocks->where('variant', $cartItem['variation'])->first();
+                $product_name_with_choice = $product->title;
+                if ($cartItem['variation'] != null) {
+                $product_name_with_choice = $product->title . ' - ' . $cartItem['variation'];
+                }
+                @endphp
+                <tr>
+                    <td class="product-thumbnail">
+                        <a href="{{ route('product.detail', $cartItem['slug']) }}">
+                            <img style="border:1px solid #ddd" src="{{ $cartItem['image'] != null ? asset($cartItem['image']) : Helper::DefaultImage() }}" alt="item">
+                        </a>
+                    </td>
+                    <td class="product-name">
+                        <a href="{{ route('product.detail', $cartItem['slug']) }}" target="_blank">{{ ucfirst($product_name_with_choice) }}
+                        </a>
 
-                        </td>
-                        <td class="product-price">
-                                <span
-                                    class="unit-amount">{{ Helper::currency_converter($cartItem['price']) }}</span>
-                        </td>
-                        <td class="product-quantity">
-                            <select name="quantity[{{ $key }}]" id="productQty{{ $key }}"
-                                    data-total_quantity="{{ \App\Models\Product::where('id', $cartItem['id'])->value('current_stock') }}"
-                                    onchange="updateCartQuantity('{{ $key }}')">
-                                @for ($i = 1; $i <= 10; $i++)
-                                    <option value="{{ $i }}"
-                                        {{ $i == $cartItem['quantity'] ? 'selected' : '' }}> {{ $i }}
-                                    </option>
+                    </td>
+                    <td class="product-price">
+                        <span class="unit-amount">{{ (isset($cartItem['package_var'])) ? ucwords($cartItem['package_var']) : '' }}</span>
+                    </td>
+                    <td class="product-price">
+                        <span class="unit-amount">{{ Helper::currency_converter($cartItem['price']) }}</span>
+                    </td>
+                    <td class="product-quantity">
+                        <select name="quantity[{{ $key }}]" id="productQty{{ $key }}" data-total_quantity="{{ \App\Models\Product::where('id', $cartItem['id'])->value('current_stock') }}" onchange="updateCartQuantity('{{ $key }}')">
+                            @for ($i = 1; $i <= 10; $i++) <option value="{{ $i }}" {{ $i == $cartItem['quantity'] ? 'selected' : '' }}> {{ $i }}
+                                </option>
                                 @endfor
-                            </select>
-                        </td>
-                        <td class="product-subtotal">
-                            <span class="subtotal-amount">{{ Helper::currency_converter($cartItem['price'] * $cartItem['quantity']) }} </span>
-                            <a href="javascript:;" onclick="removeFromCart({{ $key }})"
-                               class="remove"><i class='bx bx-trash'></i></a>
-                        </td>
-                    </tr>
+                        </select>
+                    </td>
+                    <td class="product-subtotal">
+                        <span class="subtotal-amount">{{ Helper::currency_converter($cartItem['price'] * $cartItem['quantity']) }} </span>
+                        <a href="javascript:;" onclick="removeFromCart({{ $key }})" class="remove"><i class='bx bx-trash'></i></a>
+                    </td>
+                </tr>
                 @endforeach
-
-
-                </tbody>
-            </table>
+                @endif
+            </tbody>
+        </table>
         @else
-            <div class="empty-cart d-flex flex-column align-items-center justify-content-center pb-40">
-                <img src="{{asset('frontend/assets/images/main/empty-cart.webp')}}" class="img-fluid" >
-                <p >
-                    YOU DON'T HAVE ANY ITEMS IN
-                    YOUR CART.
-                </p>
-            </div>
+        <div class="empty-cart d-flex flex-column align-items-center justify-content-center pb-40">
+            <img src="{{asset('frontend/assets/images/main/empty-cart.webp')}}" class="img-fluid">
+            <p>
+                YOU DON'T HAVE ANY ITEMS IN
+                YOUR CART.
+            </p>
+        </div>
         @endif
     </div>
 
     <div class="mobile__cart-table d-block d-lg-none">
         @if (session()->has('cart') && count(session()->get('cart')) > 0)
-            @foreach (session('cart') as $key => $cartItem)
-                @php
-                    $product = \App\Models\Product::find($cartItem['product_id']);
-                    $product_stock = $product->stocks->where('variant', $cartItem['variation'])->first();
-                    $product_name_with_choice = $product->title;
-                @endphp
-                <div class="cart-item row">
-                    <div class="img-wrapper col-4">
-                        <a href="{{ route('product.detail', $cartItem['slug']) }}">
-                            <img
-                                src="{{ $cartItem['image'] != null ? asset($cartItem['image']) : Helper::DefaultImage() }}"
-                                alt="">
-                        </a>
+        @foreach (session('cart') as $key => $cartItem)
+        @php
+        $product = \App\Models\Product::find($cartItem['product_id']);
+        $product_stock = $product->stocks->where('variant', $cartItem['variation'])->first();
+        $product_name_with_choice = $product->title;
+        @endphp
+        <div class="cart-item row">
+            <div class="img-wrapper col-4">
+                <a href="{{ route('product.detail', $cartItem['slug']) }}">
+                    <img src="{{ $cartItem['image'] != null ? asset($cartItem['image']) : Helper::DefaultImage() }}" alt="">
+                </a>
+            </div>
+            <div class="col-8 p-1">
+                <div class="d-flex justify-content-between">
+                    <h1 class="product-title"><a href="{{ route('product.detail', $cartItem['slug']) }}" target="_blank">{{ ucfirst($product->title) }}</a></h1>
+                    <a href="javascript:" onclick="removeFromCart({{ $key }})" class="remove pr-3"><i class='fa fa-times' style="color: #999999;"></i></a>
+                </div>
+                <div class="product-details">
+                    <div class="row">
+                        <div class="col-12">
+                            {{$cartItem['variation']}}
+                        </div>
                     </div>
-                    <div class="col-8 p-1">
-                        <div class="d-flex justify-content-between">
-                            <h1 class="product-title"><a href="{{ route('product.detail', $cartItem['slug']) }}"
-                                                         target="_blank">{{ ucfirst($product->title) }}</a></h1>
-                            <a href="javascript:" onclick="removeFromCart({{ $key }})"
-                               class="remove pr-3"><i class='fa fa-times' style="color: #999999;"></i></a>
-                        </div>
-                        <div class="product-details">
-                            <div class="row">
-                               <div class="col-12">
-                                   {{$cartItem['variation']}}
-                               </div>
-                            </div>
 
-                        </div>
-                        <div class="d-flex align-items-center mt-3">
-                            <div class="mr-4 price">
-                                <span>{{ Helper::currency_converter($cartItem['price']) }}</span>
-                            </div>
-                            <div class="input-counter qty-changer">
-                                <span data-id="{{ $key }}" class="minus-btn"><i
-                                        class="bx bx-minus"></i></span>
-                                <input type="text" class="qty-input" id="qty-input-{{ $key }}"
-                                       value="{{ $cartItem['quantity'] }}">
-                                <span data-id="{{ $key }}" class="plus-btn"><i
-                                        class="bx bx-plus"></i></span>
-                                <input type="hidden" data-id="{{ $key }}"
-                                       data-product-quantity="{{ \App\Models\Product::where('id', $cartItem['id'])->value('current_stock') }}"
-                                       id="update-cart-{{ $key }}">
-                            </div>
-                        </div>
+                </div>
+                <div class="d-flex align-items-center mt-3">
+                    <div class="mr-4 price">
+                        <span>{{ Helper::currency_converter($cartItem['price']) }}</span>
+                    </div>
+                    <div class="input-counter qty-changer">
+                        <span data-id="{{ $key }}" class="minus-btn"><i class="bx bx-minus"></i></span>
+                        <input type="text" class="qty-input" id="qty-input-{{ $key }}" value="{{ $cartItem['quantity'] }}">
+                        <span data-id="{{ $key }}" class="plus-btn"><i class="bx bx-plus"></i></span>
+                        <input type="hidden" data-id="{{ $key }}" data-product-quantity="{{ \App\Models\Product::where('id', $cartItem['id'])->value('current_stock') }}" id="update-cart-{{ $key }}">
                     </div>
                 </div>
-                @if (!$loop->last)
-                    <hr class="border-bottom-line">
-                @endif
-            @endforeach
-        @else
-            <div class="empty-cart d-flex flex-column align-items-center justify-content-center pb-40">
-                <img src="{{asset('frontend/assets/images/main/empty-cart.webp')}}" class="img-fluid" >
-                <p >
-                    YOU DON'T HAVE ANY ITEMS IN
-                    YOUR CART.
-                </p>
             </div>
+        </div>
+        @if (!$loop->last)
+        <hr class="border-bottom-line">
+        @endif
+        @endforeach
+        @else
+        <div class="empty-cart d-flex flex-column align-items-center justify-content-center pb-40">
+            <img src="{{asset('frontend/assets/images/main/empty-cart.webp')}}" class="img-fluid">
+            <p>
+                YOU DON'T HAVE ANY ITEMS IN
+                YOUR CART.
+            </p>
+        </div>
         @endif
     </div>
 
@@ -153,13 +138,13 @@
                     @php($shipping_cost = 0)
                     @php($coupon_discount = 0)
                     @if (session()->has('cart') && count(session()->get('cart')) > 0)
-                        @foreach (session('cart') as $key => $cartItem)
-                            @php($subtotal += $cartItem['price'] * $cartItem['quantity'])
-                            @php($shipping_cost += $cartItem['shipping_cost'])
-                        @endforeach
+                    @foreach (session('cart') as $key => $cartItem)
+                    @php($subtotal += $cartItem['price'] * $cartItem['quantity'])
+                    @php($shipping_cost += $cartItem['shipping_cost'])
+                    @endforeach
                     @endif
                     @if (session()->has('coupon_discount'))
-                        @php($coupon_discount = session()->get('coupon_discount'));
+                    @php($coupon_discount = session()->get('coupon_discount'));
                     @endif
                     <ul>
                         <li>
@@ -170,10 +155,10 @@
                         {{-- </li> --}}
 
                         @if (session()->has('coupon_discount'))
-                            <li>
-                                <span>Save amount</span>
-                                <span>{{ Helper::currency_converter(session('coupon_discount')) }}</span></b>
-                            </li>
+                        <li>
+                            <span>Save amount</span>
+                            <span>{{ Helper::currency_converter(session('coupon_discount')) }}</span></b>
+                        </li>
                         @endif
 
                         <li class="total">
@@ -183,14 +168,12 @@
                     </ul>
                 </div>
                 <div class="checkout-btn-wrapper">
-                    <a href="{{ route('checkout') }}"
-                       class="d-none pt-3 text-center default-btn secondary-btn checkout-paypal-btn">
+                    <a href="{{ route('checkout') }}" class="d-none pt-3 text-center default-btn secondary-btn checkout-paypal-btn">
                         <span>Continue To Checkout</span>
                         <i class="bx bx-right-arrow-alt float-right"></i></a>
                     <button type="button" class="mt-2 default-btn secondary-btn checkout-paypal-btn">
                         <a href="{{ route('checkout') }}" class="text-white">
-                            Continue to <strong class="font-italic">Checkout</strong> <i
-                                class="bx bx-right-arrow-alt float-right"></i>
+                            Continue to <strong class="font-italic">Checkout</strong> <i class="bx bx-right-arrow-alt float-right"></i>
                         </a>
                     </button>
                 </div>

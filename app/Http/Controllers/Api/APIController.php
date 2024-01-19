@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use App\Models\Order;
+use App\Models\OrderDetail;
 use App\Models\Otp;
 use App\Models\Banner;
 use App\Models\AttributeValue;
@@ -33,7 +35,7 @@ class APIController extends Controller
     public function listBanners()
     {
         $banners = Banner::where(['banner_type' => 'home', 'status' => 'active'])->orderBy('id', 'DESC')->get();
-        return response()->json(['message' => '', 'banners' => $banners], 200);
+        return response()->json(['status' => 200, 'message' => 'Banners List', 'banners' => $banners], 200);
     }
     public function testApiCall()
     {
@@ -106,7 +108,6 @@ class APIController extends Controller
                 'Authorization' => $request->header('Authorization')
             ]);
             $response = $client->get($passportEndpoint);
-            print_r($response);
             if ($response->status() === 200) {
                 $body = $response->object();
                 //do some stuff with response here, like setting the global logged in user
@@ -132,10 +133,10 @@ class APIController extends Controller
                 // Add more fields if needed
 
                 $user->save();
-                return response()->json(['message' => 'Profile updated successfully', 'user' => $user], 200);
+                return response()->json(['status' => 200, 'message' => 'Profile updated successfully', 'user' => $user], 200);
             } catch (ValidationException $e) {
                 // Validation failed, return JSON response with errors
-                return response()->json(['message' => 'Validation failed', 'errors' => $e->errors()], 422);
+                return response()->json(['status' => 422, 'message' => 'Validation failed', 'errors' => $e->errors()], 200);
             }
         }
     }
@@ -177,35 +178,43 @@ class APIController extends Controller
     public function categories()
     {
         $categories = Category::orderBy('id', 'DESC')->get();
-        return response()->json(['message' => 'Categories Listed successfully', 'categories' => $categories], 200);
+        return response()->json(['status' => 200, 'message' => 'Categories Listed successfully', 'categories' => $categories], 200);
     }
     public function products()
     {
         $products = Product::orderBy('id', 'DESC')->get();
-        return response()->json(['message' => 'Products Listed successfully', 'products' => $products], 200);
+        return response()->json(['status' => 200, 'message' => 'Products Listed successfully', 'products' => $products], 200);
     }
     public function productByCategory($catid)
     {
         $products = Product::where(['status' => 'active', 'cat_ids' => $catid])->first();
-        return response()->json(['message' => 'Products Listed successfully', 'products' => $products], 200);
+        return response()->json(['status' => 200, 'message' => 'Products Listed successfully', 'products' => $products], 200);
     }
     public function productDetail(Request $request, $pslug)
     {
-        $product = Product::with('stocks','rel_prods')->where('slug', $pslug)->first();
+        $product = Product::with('stocks', 'rel_prods')->where('slug', $pslug)->first();
         $reviews = $product->reviews()->orderBy('id', 'DESC')->get();
         $display_reviews = $product->reviews()->take(2)->latest()->get();
         $recent_view = null;
         if ($product) {
-            return response()->json(['message' => 'Products Details get successfully', 'display_reviews' => $display_reviews, 'products' => $product, 'reviews' => $reviews], 200);
+            return response()->json(['status' => 200, 'message' => 'Products Details get successfully', 'display_reviews' => $display_reviews, 'products' => $product, 'reviews' => $reviews], 200);
         } else {
-            return response()->json(['message' => 'Product detail not found'], 201);
+            return response()->json(['status' => 200, 'message' => 'Product detail not found'], 201);
         }
     }
     public function listAddress(Request $request)
     {
-         $user_id = $request->user();
+        $user_id = $request->user();
         $shippingAddress = ShippingAddress::where('user_id', $user_id->id)->get();
-        return response()->json(['message' => 'Address Listed successfully', 'address' => $shippingAddress], 200);
+        return response()->json(['status' => 200, 'message' => 'Address Listed successfully', 'address' => $shippingAddress], 200);
+    }
+    public function cart(Request $request)
+    {
+        $cart = '';
+        if ($request->session()->has('cart_' . Auth::user()->id)) {
+            $cart = $request->session()->get('cart_' . Auth::user()->id);
+        }
+        return response()->json(['status' => 200, 'message' => 'Cart Details', 'cart' => $cart], 200);
     }
     public function cartAdd(Request $request)
     {
@@ -220,7 +229,7 @@ class APIController extends Controller
         $variations = [];
         $price = 0;
         $additional_charge = 0;
-        
+
         //check the color enabled or disabled for the product
         if ($request->has('color')) {
             $data['color'] = $request['color'];
@@ -243,33 +252,33 @@ class APIController extends Controller
         $data['variation'] = $str;
         if ($str) {
             $product_stock = $product->stocks->where('variant', $str)->first();
-            if($product_stock){
+            if ($product_stock) {
                 $price += $product_stock->price;
                 $quantity = $product_stock->qty;
-            }else{
-                return response()->json(['message' => 'Sorry This is Out of stock'], 200);
+            } else {
+                return response()->json(['status' => 200, 'message' => 'Sorry This is Out of stock'], 200);
             }
         } else {
             $price += $product->purchase_price;
             $quantity = $product->stock;
         }
-
-        if ($request->session()->has('cart_'.Auth::user()->id)) {
-            if (count($request->session()->get('cart_'.Auth::user()->id)) > 0) {
-                foreach ($request->session()->get('cart_'.Auth::user()->id) as $key => $cartItem) {
+        $cart_sub_total = 0;
+        if ($request->session()->has('cart_' . Auth::user()->id)) {
+            if (count($request->session()->get('cart_' . Auth::user()->id)) > 0) {
+                foreach ($request->session()->get('cart_' . Auth::user()->id) as $key => $cartItem) {
                     if ($cartItem['id'] == $request['id'] && $cartItem['variation'] == $str) {
-                        unset($request->session()->get('cart_'.Auth::user()->id)[$key]);
+                        unset($request->session()->get('cart_' . Auth::user()->id)[$key]);
                         // $cartItem['id'] = $request->quantity;
                         // $response['message'] = '<i  class="fas fa-exclamation-triangle"></i> Oops: you have already added in shopping cart';
                         // $cart = $request->session()->get('cart_'.Auth::user()->id, collect([]));
                         // $response['status'] = $cart;
                         // return json_encode($response);
                     }
+                    $cart_sub_total += $cartItem['subtotal'];
                 }
             }
         }
         $shipping_id = 1;
-        $shipping_cost = 0;
         $data['product_id'] = $product->id;
         $data['quantity'] = $request['quantity'];
         $data['slug'] = $product->slug;
@@ -279,22 +288,20 @@ class APIController extends Controller
         $data['price'] = $price + ($additional_charge);
         $data['subtotal'] = ($data['quantity'] * $data['price']) - $data['discount'];
         $data['shipping_method_id'] = $shipping_id;
-        $data['shipping_cost'] = $shipping_cost;
-        
-        if ($request->session()->has('cart_'.Auth::user()->id)) {
-            $cart = $request->session()->get('cart_'.Auth::user()->id, collect([]));
-            $cart['cart_total'] = $data['subtotal'];
+        $data['shipping_cost'] = config('custom.custom.shipping_charges');
+
+        if ($request->session()->has('cart_' . Auth::user()->id)) {
+            $cart = $request->session()->get('cart_' . Auth::user()->id, collect([]));
             $cart->push($data);
         } else {
-            $cart['cart_total'] = $data['subtotal'];
             $cart = collect([$data]);
-            $request->session()->put('cart_'.Auth::user()->id, $cart);
+            $request->session()->put('cart_' . Auth::user()->id, $cart);
         }
-        return response()->json(['message' => 'Product Added to Cart', 'cart' => $cart], 200);
+        return response()->json(['status' => 200, 'message' => 'Product Added to Cart', 'cart' => $cart], 200);
     }
     public function cartUpdate(Request $request)
     {
-        $cart = $request->session()->get('cart_'.Auth::user()->id, collect([]));
+        $cart = $request->session()->get('cart_' . Auth::user()->id, collect([]));
         $cart = $cart->map(function ($object, $key) use ($request) {
             if ($key == $request->key) {
                 $object['quantity'] = $request->quantity;
@@ -302,7 +309,7 @@ class APIController extends Controller
             return $object;
         });
 
-        $request->session()->put('cart_'.Auth::user()->id, $cart);
+        $request->session()->put('cart_' . Auth::user()->id, $cart);
 
         $this->couponAppliedOnUpdatedCart();
         if ($request->ajax()) {
@@ -313,16 +320,43 @@ class APIController extends Controller
         }
         return $response;
     }
-    public function cartDelete(Request $request)
+    public function cartDelete(Request $request, $id = '', $var = '')
     {
-        if ($request->session()->has('cart_'.Auth::user()->id)) {
-            $request->session()->forget('cart_' . Auth::user()->id);
+        $msg = 'Your cart is Empty';
+        $cart = '';
+        if ($request->session()->has('cart_' . Auth::user()->id)) {
+            $cart = $request->session()->get('cart_' . Auth::user()->id);
+            if (count($request->session()->get('cart_' . Auth::user()->id)) > 0) {
+                $msg = 'Cart Details';
+                if ((isset($id) && $id > 0) && (isset($var) && $var != null)) {
+                    foreach ($request->session()->get('cart_' . Auth::user()->id) as $key => $cartItem) {
+                        if ($cartItem['id'] == $id && $cartItem['variation'] == $var) {
+                            unset($request->session()->get('cart_' . Auth::user()->id)[$key]);
+                            $cart = $request->session()->get('cart_' . Auth::user()->id);
+                            $msg = 'Product removed from cart.';
+                        }
+                    }
+                } elseif (isset($id) && $id > 0) {
+                    foreach ($request->session()->get('cart_' . Auth::user()->id) as $key => $cartItem) {
+                        if ($cartItem['id'] == $id) {
+                            unset($request->session()->get('cart_' . Auth::user()->id)[$key]);
+                            $cart = $request->session()->get('cart_' . Auth::user()->id);
+                            $msg = 'Product removed from cart.';
+                        }
+                    }
+                } else {
+                    $request->session()->forget('cart_' . Auth::user()->id);
+                    $cart = $request->session()->get('cart_' . Auth::user()->id);
+                    $msg = 'Your Cart is empty now.';
+                }
+            }
+            return response()->json(['status' => 200, 'message' => $msg, 'cart' => $cart, 'status' => 200], 200);
         }
-        return response()->json(['message' => 'Your Cart is empty now.'], 200);
+        return response()->json(['status' => 200, 'message' => $msg, 'cart' => [], 'status' => 200], 200);
         // if ($request->session()->has('cart_'.Auth::user()->id)) {
         //     $cart = $request->session()->get('cart_'.Auth::user()->id, collect([]));
         //     $cart->forget($request->key);
-        //     $request->session()->put('cart_'.Auth::user()->id, $cart);
+        //     $request->session()->p'status' => 200,ut('cart_'.Auth::user()->id, $cart);
         // }
 
         // // COUPON UPDATE HERE
@@ -338,6 +372,108 @@ class APIController extends Controller
         // }
         // return $response;
     }
+    public function checkoutStore(Request $request)
+    {
+        if ($request->has('different_address')) {
+            $this->validate($request, [
+                'address' => 'bail|string|required',
+                'country' => 'string|required',
+                'saddress' => 'string|required',
+                'scountry' => 'bail|string|required',
+                'address2' => 'string|nullable',
+                'state' => 'string|nullable',
+                'postcode' => 'numeric|nullable',
+                'note' => 'string|nullable',
+                'saddress2' => 'string|nullable',
+                'sstate' => 'string|nullable',
+                'spostcode' => 'numeric|nullable',
+            ], [
+                'saddress.required' => 'The shipping address is required',
+                'saddress2.string' => 'The shipping address2 must be string',
+                'scountry.required' => 'The shipping country is required',
+                'sstate.string' => 'The shipping state must be string',
+                'spostcode.numeric' => 'The shipping postcode must be numeric',
+            ]);
+        } else {
+            $this->validate($request, [
+                'address' => 'bail|string|required',
+                'address2' => 'string|nullable',
+                'country' => 'string|required',
+                'state' => 'string|nullable',
+                'postcode' => 'numeric|nullable',
+                'note' => 'string|nullable',
+            ]);
+        }
+
+        $cart = session('cart');
+        $ship_to_diff_adr = 0;
+        if ($request->has('different-address')) {
+            $ship_to_diff_adr = 1;
+        }
+        $coupon_discount = session()->has('coupon_discount') ? session('coupon_discount') : 0;
+        $order = new Order();
+        $order['user_id'] = auth()->user()->id;
+
+        //serial order number
+        $orderObj = DB::table('orders')->select('order_number')->latest('id')->first();
+        if ($orderObj) {
+            $orderNr = $orderObj->order_number;
+            $removed1char = substr($orderNr, 6);
+            $generateOrder_nr = $stpad = config('custom.custom.order_prefix') . str_pad($removed1char + 1, 3, "0", STR_PAD_LEFT);
+        } else {
+            $generateOrder_nr = Str::upper(config('custom.custom.order_prefix') . str_pad(1, 4, "0", STR_PAD_RIGHT));
+        }
+
+        $order['order_number'] = $generateOrder_nr;
+
+        $order['coupon'] = $coupon_discount;
+        $order['quantity'] = count($cart);
+        $order['subtotal'] = Order::cart_grand_total($cart);
+        $order['total_amount'] = Order::cart_grand_total($cart) - $coupon_discount + Order::total_shipping_cost($cart);
+        $order['payment_method'] = $request->payment_method;
+        $order['payment_status'] = 'unpaid';
+        $order['order_status'] = 'pending';
+        $order['delivery_charge'] = Order::total_shipping_cost($cart);
+        $order['note'] = $request->note;
+        $order->first_name = Auth::user()->first_name;
+        $order->last_name = Auth::user()->last_name;
+        $order->email = Auth::user()->email;
+        $order->phone = Auth::user()->phone;
+        $order->country = 'India';
+        $order->address = $request->address;
+        $order->address2 = $request->address2;
+        $order->state = $request->state;
+        $order->postcode = $request->postcode;
+
+        $order->scountry = $ship_to_diff_adr == '1' ? $request->scountry : $request->country;
+        $order->saddress = $ship_to_diff_adr == '1' ? $request->saddress : $request->address;
+        $order->saddress2 = $ship_to_diff_adr == '1' ? $request->saddress2 : $request->address2;
+        $order->sstate = $ship_to_diff_adr == '1' ? $request->sstate : $request->state;
+        $order->spostcode = $ship_to_diff_adr == '1' ? $request->spostcode : $request->postcode;
+
+        if ($order->save()) {
+            $subtotal = 0;
+            //Order detail storing
+            foreach (session()->get('cart') as $key => $cartItem) {
+                $product = Product::find($cartItem['id']);
+                $subtotal += $cartItem['price'] * $cartItem['quantity'];
+                $order_detail = new OrderDetail();
+                $order_detail->order_id = $order->id;
+                $order_detail->product_id = $product->id;
+                $order_detail->product_details = $product;
+                $order_detail->variation = $cartItem['variation'];
+                $order_detail->price = $cartItem['price'] * $cartItem['quantity'];
+                $order_detail->quantity = $cartItem['quantity'];
+                $order_detail->discount = $cartItem['discount'] * $cartItem['quantity'];
+                $order_detail->shipping_method_id = $cartItem['shipping_method_id'];
+                $order_detail->save();
+            }
+            $status = $order->save();
+            if ($status) {
+                $request->session()->put('order_id', $order->id);
+            }
+        }
+    }
     public function addUpdateaddress(Request $request, $id = '')
     {
         $user_id = $request->user();
@@ -352,7 +488,7 @@ class APIController extends Controller
             $id = isset($request->id) ? $request->id : null;
             if (isset($id) && $id != null) {
                 $shippingAddress = ShippingAddress::where('id', $id)->update(['postcode' => $request->postcode, 'address' => $request->address, 'address2' => $request->address2, 'country' => 'India', 'state' => 'Maharashtra']);
-                return response()->json(['message' => 'Address Updated successfully'], 200);
+                return response()->json(['status' => 200, 'message' => 'Address Updated successfully'], 200);
             } else {
                 $shippingAddress = new ShippingAddress;
                 $shippingAddress->country = 'India';
@@ -368,11 +504,11 @@ class APIController extends Controller
                 $shippingAddress->saddress  = $request->saddress;
                 $shippingAddress->saddress2  = $request->saddress2;
                 $shippingAddress->save();
-                return response()->json(['message' => 'New Address Added successfully'], 200);
+                return response()->json(['status' => 200, 'message' => 'New Address Added successfully'], 200);
             }
         } catch (ValidationException $e) {
             // Validation failed, return JSON response with errors
-            return response()->json(['message' => 'Validation failed', 'errors' => $e->errors()], 422);
+            return response()->json(['status' => 200, 'message' => 'Validation failed', 'errors' => $e->errors()], 422);
         }
     }
 }

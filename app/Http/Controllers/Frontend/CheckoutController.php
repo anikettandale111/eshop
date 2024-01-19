@@ -23,63 +23,109 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Stripe\Charge;
 use Stripe\Stripe;
+use DB;
 
 class CheckoutController extends Controller
 {
     public function checkout()
     {
         $user = Auth::user();
+        $address = ShippingAddress::select('id', DB::raw('CONCAT(address,", ",address2,", ",state,", ",postcode) AS con_add'))->where('user_id', $user->id)->get();
         if (!session()->has('cart')) {
             return back()->with('error', 'Please add some items in your cart.');
         }
-        return view('frontend.pages.checkout.checkout', compact('user'));
+        return view('frontend.pages.checkout.checkout', compact('user', 'address'));
     }
 
     public function checkoutStore(Request $request)
     {
-
-
         if ($request->has('different-address')) {
-            $this->validate($request, [
-                'first_name' => 'bail|string|required',
-                'last_name' => 'bail|string|required',
-                'email' => 'bail|email|required',
-                'phone' => 'required',
-                'address' => 'bail|string|required',
-                'address2' => 'string|nullable',
-                'country' => 'string|required',
-                'state' => 'string|nullable',
-                'postcode' => 'numeric|nullable',
-                'note' => 'string|nullable',
-                'saddress' => 'string|required',
-                'saddress2' => 'string|nullable',
-                'scountry' => 'bail|string|required',
-                'sstate' => 'string|nullable',
-                'spostcode' => 'numeric|nullable',
-            ], [
-                'saddress.required' => 'The shipping address is required',
-                'saddress2.string' => 'The shipping address2 must be string',
-                'scountry.required' => 'The shipping country is required',
-                'sstate.string' => 'The shipping state must be string',
-                'spostcode.numeric' => 'The shipping postcode must be numeric',
-            ]);
+            if (isset($request->address_list) && $request->address_list > 0) {
+                $this->validate($request, [
+                    'first_name' => 'bail|string|required',
+                    'last_name' => 'bail|string|required',
+                    'email' => 'bail|email|required',
+                    'phone' => 'required',
+                    'note' => 'string|nullable',
+                    'saddress' => 'string|required',
+                    'saddress2' => 'string|nullable',
+                    'scountry' => 'bail|string|required',
+                    'sstate' => 'string|nullable',
+                    'spostcode' => 'numeric|nullable',
+                ], [
+                    'saddress.required' => 'The shipping address is required',
+                    'saddress2.string' => 'The shipping address2 must be string',
+                    'scountry.required' => 'The shipping country is required',
+                    'sstate.string' => 'The shipping state must be string',
+                    'spostcode.numeric' => 'The shipping postcode must be numeric',
+                ]);
+                $shadd = ShippingAddress::where('id',$request->address_list)->first();
+                $request['address'] = $shadd->address;
+                $request['address2'] = $shadd->address2;
+                $request['country'] = $shadd->country;
+                $request['state'] = $shadd->state;
+                $request['postcode'] = $shadd->postcode;
+            } else {
+                $this->validate($request, [
+                    'first_name' => 'bail|string|required',
+                    'last_name' => 'bail|string|required',
+                    'email' => 'bail|email|required',
+                    'phone' => 'required',
+                    'address' => 'bail|string|required',
+                    'address2' => 'string|nullable',
+                    'country' => 'string|required',
+                    'state' => 'string|nullable',
+                    'postcode' => 'numeric|nullable',
+                    'note' => 'string|nullable',
+                    'saddress' => 'string|required',
+                    'saddress2' => 'string|nullable',
+                    'scountry' => 'bail|string|required',
+                    'sstate' => 'string|nullable',
+                    'spostcode' => 'numeric|nullable',
+                ], [
+                    'saddress.required' => 'The shipping address is required',
+                    'saddress2.string' => 'The shipping address2 must be string',
+                    'scountry.required' => 'The shipping country is required',
+                    'sstate.string' => 'The shipping state must be string',
+                    'spostcode.numeric' => 'The shipping postcode must be numeric',
+                ]);
+            }
         } else {
-            $this->validate($request, [
-                'first_name' => 'bail|string|required',
-                'last_name' => 'bail|string|required',
-                'email' => 'bail|email|required',
-                'phone' => 'required',
-                'address' => 'bail|string|required',
-                'address2' => 'string|nullable',
-                'country' => 'string|required',
-                'state' => 'string|nullable',
-                'postcode' => 'numeric|nullable',
-                'note' => 'string|nullable',
-            ]);
+            if (isset($request->address_list) && $request->address_list > 0) {
+                $this->validate($request, [
+                    'first_name' => 'bail|string|required',
+                    'last_name' => 'bail|string|required',
+                    'email' => 'bail|email|required',
+                    'phone' => 'required',
+                    'note' => 'string|nullable',
+                ]);
+                $shadd = ShippingAddress::where('id',$request->address_list)->first();
+                $request['address'] = $shadd->address;
+                $request['address2'] = $shadd->address2;
+                $request['country'] = $shadd->country;
+                $request['state'] = $shadd->state;
+                $request['postcode'] = $shadd->postcode;
+            } else {
+                $this->validate($request, [
+                    'first_name' => 'bail|string|required',
+                    'last_name' => 'bail|string|required',
+                    'email' => 'bail|email|required',
+                    'phone' => 'required',
+                    'address' => 'bail|string|required',
+                    'address2' => 'string|nullable',
+                    'country' => 'string|required',
+                    'state' => 'string|nullable',
+                    'postcode' => 'numeric|nullable',
+                    'note' => 'string|nullable',
+                ]);
+            }
         }
-
-
-
+        $request['address'] = (isset($request->saddress) && $request->saddress != null) ? $request->saddress: $request->address;
+        $request['address2'] = (isset($request->saddress2) && $request->saddress2 != null) ? $request->saddress2: $request->address2;
+        $request['state'] = (isset($request->sstate) && $request->sstate != null) ? $request->sstate: $request->state;
+        $request['country'] = (isset($request->scountry) && $request->scountry != null) ? $request->scountry: $request->country;
+        $request['postcode'] = (isset($request->spostcode) && $request->spostcode != null) ? $request->spostcode: $request->postcode;
+        
         if ($request->payment_method) {
             $orderController = new OrderController;
             $orderController->store($request);
@@ -98,7 +144,7 @@ class CheckoutController extends Controller
                     $array['view'] = 'mail.invoice';
                     $array['subject'] = 'Your order has been placed -' . $order['order_number'];
                     $array['admin_subject'] = 'You have new order from -' . $order['order_number'];
-                    $array['from'] = env('MAIL_FROM_ADDRESS','info@ketramart.com');
+                    $array['from'] = env('MAIL_FROM_ADDRESS', 'info@ketramart.com');
                     $array['order'] = $order;
 
                     if (env('MAIL_USERNAME') != null) {
@@ -161,7 +207,7 @@ class CheckoutController extends Controller
         if ($status) {
             $array['view'] = 'mail.invoice';
             $array['subject'] = 'Your order has been placed -' . $order['order_number'];
-            $array['from'] = env('MAIL_FROM_ADDRESS','info@ketramart.com');
+            $array['from'] = env('MAIL_FROM_ADDRESS', 'info@ketramart.com');
             $array['admin_subject'] = 'You have new order from -' . $order['order_number'];
             $array['order'] = $order;
 

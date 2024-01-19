@@ -5,8 +5,6 @@
             font-size: 22px;
         }
 
-
-
         .btn-continue {
             border: 1px solid #d6d6d6!important;
         }

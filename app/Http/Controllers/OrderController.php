@@ -130,9 +130,9 @@ class OrderController extends Controller
 
             $removed1char = substr($orderNr, 6);
 
-            $generateOrder_nr = $stpad = 'KETRA-' . str_pad($removed1char + 1, 3, "0", STR_PAD_LEFT);
+            $generateOrder_nr = $stpad = config('custom.custom.order_prefix') . str_pad($removed1char + 1, 3, "0", STR_PAD_LEFT);
         } else {
-            $generateOrder_nr = Str::upper('KETRA-' . str_pad(1, 4, "0", STR_PAD_RIGHT));
+            $generateOrder_nr = Str::upper(config('custom.custom.order_prefix') . str_pad(1, 4, "0", STR_PAD_RIGHT));
         }
 
         $order['order_number'] = $generateOrder_nr;
@@ -152,7 +152,7 @@ class OrderController extends Controller
         $order->phone = $request->phone;
         $order->country = $request->country;
         $order->address = $request->address;
-        $order->address2 = $request->address;
+        $order->address2 = $request->address2;
         $order->state = $request->state;
         $order->postcode = $request->postcode;
 

@@ -26,39 +26,48 @@ class CartController extends Controller
     {
 
         $product = Product::find($request->id);
-
         $data = array();
         $data['id'] = $product->id;
-        $str = '';
+        $str = (isset($request->variant))? $request->variant : '';
         $variations = [];
+        $var_pkg='';
         $price = 0;
         $additional_charge = 0;
 
         //check the color enabled or disabled for the product
-        if ($request->has('color')) {
-            $data['color'] = $request['color'];
-            $str = AttributeValue::where('color_code', $request['color'])->first()->name;
-            $variations['color'] = str_replace(' ', '_', $str);
-        }
+        // if ($request->has('color')) {
+        //     $data['color'] = $request['color'];
+        //     $str = AttributeValue::where('color_code', $request['color'])->first()->name;
+        //     $variations['color'] = str_replace(' ', '_', $str);
+        // }
         //Gets all the choice values of customer choice option and generate a string like Black-S-Cotton
-        if (json_decode($product->choice_options)) {
-            foreach (json_decode($product->choice_options) as $key => $choice) {
-                //                $data[$choice->name] = $request[$choice->name];
-                //                $variations[$choice->title] = $request[$choice->name];
-                if ($str != null) {
-                    $str .= '-' . str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
-                } else {
-                    $str .= str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
-                }
-            }
-        }
+        // if (json_decode($product->choice_options)) {
+        //     foreach (json_decode($product->choice_options) as $key => $choice) {
+        //         //                $data[$choice->name] = $request[$choice->name];
+        //         //                $variations[$choice->title] = $request[$choice->name];
+        //         if ($str != null) {
+        //             $str .= '-' . str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
+        //         } else {
+        //             $str .= str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
+        //         }
+        //     }
+        // }
 
 
         $data['variation'] = $str;
         if ($str) {
-            $product_stock = $product->stocks->where('variant', $str)->first();
-            $price += $product_stock->price;
-            $quantity = $product_stock->qty;
+            $product_stock = $product->stocks->where('id', $str)->first();
+            $var_pkg = $product_stock->variant;
+            if(isset($product->discount) && $product->discount != ''){
+                if(isset($product->discount_type) && $product->discount_type == 'amount'){
+                    $price += $product_stock->price - $product->discount;
+                    $quantity = $product_stock->qty;
+                }else{
+                    $discountAmount = ($product->discount / 100) * $product_stock->price;
+                    $price += $product_stock->price - $discountAmount;
+                    $quantity = $product_stock->qty;
+                }
+            }
         } else {
             $price += $product->purchase_price;
             $quantity = $product->stock;
@@ -88,7 +97,8 @@ class CartController extends Controller
         $data['subtotal'] = $data['quantity'] * $data['price'];
         $data['shipping_method_id'] = $shipping_id;
         $data['shipping_cost'] = $shipping_cost;
-
+        $data['package_var'] = $var_pkg;
+        
         if ($request->session()->has('cart')) {
             $cart = $request->session()->get('cart', collect([]));
             $cart->push($data);
@@ -97,11 +107,7 @@ class CartController extends Controller
             $request->session()->put('cart', $cart);
         }
 
-
         $response['data'] = $cart;
-
-
-
 
         if ($request->ajax()) {
             $header = view('frontend.layouts.header')->render();
@@ -114,10 +120,8 @@ class CartController extends Controller
             $response['cart_url'] = route('cart');
             $response['view'] = view('frontend.partials._added_to_cart', with(['product' => $product, 'data' => $data, 'price' => $data['price'], 'quantity' => $request->quantity]))->render();
         }
-
         return $response;
     }
-
 
     public function cartDelete(Request $request)
     {
@@ -165,30 +169,38 @@ class CartController extends Controller
 
     public function variant_price(Request $request)
     {
-        $product = Product::find($request->id);
+        $product = Product::with('stocks')->find($request->id);
         $str = '';
         $quantity = 0;
         $price = 0;
 
-        if ($request->has('color')) {
-            $data['color'] = $request['color'];
-            $str = str_replace(' ', '_', AttributeValue::where('color_code', $request['color'])->first()->name);
-        }
+        // if ($request->has('color')) {
+        //     $data['color'] = $request['color'];
+        //     $str = str_replace(' ', '_', AttributeValue::where('color_code', $request['color'])->first()->name);
+        // }
 
-        if (json_decode($product->choice_options) != null) {
-            foreach (json_decode($product->choice_options) as $key => $choice) {
-                if ($str != null) {
-                    $str .= '-' . str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
-                } else {
-                    $str .= str_replace(' ', '',  $request['attribute_id_' . $choice->attribute_id]);
+        // if (json_decode($product->choice_options) != null) {
+        //     foreach (json_decode($product->choice_options) as $key => $choice) {
+        //         if ($str != null) {
+        //             $str .= '-' . str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
+        //         } else {
+        //             $str .= str_replace(' ', '',  $request['attribute_id_' . $choice->attribute_id]);
+        //         }
+        //     }
+        // }
+
+        if ($request->variant) {
+            $product_stock = $product->stocks->where('id', $request->variant)->first();
+            if(isset($product->discount) && $product->discount != ''){
+                if(isset($product->discount_type) && $product->discount_type == 'amount'){
+                    $price += $product_stock->price - $product->discount;
+                    $quantity = $product_stock->qty;
+                }else{
+                    $discountAmount = ($product->discount / 100) * $product_stock->price;
+                    $price += $product_stock->price - $discountAmount;
+                    $quantity = $product_stock->qty;
                 }
             }
-        }
-
-        if ($str) {
-            $product_stock = $product->stocks->where('variant', $str)->first();
-            $price += $product_stock->price;
-            $quantity = $product_stock->qty;
         } else {
             $price += $product->purchase_price;
             $quantity = $product->stock;

@@ -39,7 +39,7 @@ class AttributeValueController extends Controller
     {
         $attribute_value=new AttributeValue;
         $attribute_value->attribute_id=$request->attribute_id;
-        $attribute_value->name=str_replace(' ','',$request->name);
+        $attribute_value->name=str_replace(' ','-',ucwords($request->name));
 
         if($request->hasFile('icon')){
             if($file=$request->file('icon')){
