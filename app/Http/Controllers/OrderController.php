@@ -117,34 +117,28 @@ class OrderController extends Controller
             $ship_to_diff_adr = 1;
         }
         $coupon_discount = session()->has('coupon_discount') ? session('coupon_discount') : 0;
-
-
         $order = new Order();
-
         $order['user_id'] = auth()->user()->id;
-
+        
         //serial order number
         $orderObj = DB::table('orders')->select('order_number')->latest('id')->first();
         if ($orderObj) {
             $orderNr = $orderObj->order_number;
-
             $removed1char = substr($orderNr, 6);
-
             $generateOrder_nr = $stpad = config('custom.custom.order_prefix') . str_pad($removed1char + 1, 3, "0", STR_PAD_LEFT);
         } else {
             $generateOrder_nr = Str::upper(config('custom.custom.order_prefix') . str_pad(1, 4, "0", STR_PAD_RIGHT));
         }
-
         $order['order_number'] = $generateOrder_nr;
-
+        $shipping_cost = config('custom.custom.shipping_charges');
         $order['coupon'] = $coupon_discount;
         $order['quantity'] = count($cart);
         $order['subtotal'] = Order::cart_grand_total($cart);
-        $order['total_amount'] = Order::cart_grand_total($cart) - $coupon_discount + Order::total_shipping_cost($cart);
+        $order['total_amount'] = Order::cart_grand_total($cart) - $coupon_discount + $shipping_cost;
         $order['payment_method'] = $request->payment_method;
         $order['payment_status'] = 'unpaid';
         $order['order_status'] = 'pending';
-        $order['delivery_charge'] = Order::total_shipping_cost($cart);
+        $order['delivery_charge'] = $shipping_cost;
         $order['note'] = $request->note;
         $order->first_name = $request->first_name;
         $order->last_name = $request->last_name;

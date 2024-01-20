@@ -939,11 +939,7 @@
     $('.load-more').click(function() {
         var total_result = parseInt($(".load-more").attr('data-totalResult'));
         var total_currentResult = $('.review-item').length;
-        var product_id = {
-            {
-                $product - > id
-            }
-        };
+        var product_id = {{$product->id}};
         $.ajax({
             type: 'get',
             url: main_site + '/product-more-reviews/' + product_id,

@@ -49,7 +49,7 @@
     </div>
     <!-- Responsive Nav Menu for Mobile Ends -->
 
-    <div class="main-nav">
+    <!-- <div class="main-nav">
         <div class="container">
             <nav class="navbar navbar-expand-md navbar-light">
                 <div class="collapse navbar-collapse mean-menu">
@@ -80,5 +80,5 @@
                 </div>
             </nav>
         </div>
-    </div>
+    </div> -->
 </div>

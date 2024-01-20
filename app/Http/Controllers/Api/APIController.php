@@ -57,12 +57,12 @@ class APIController extends Controller
         if (isset($request->phone) && is_numeric($request->phone) && strlen($request->phone) == 10) {
             $getUser = User::where('phone', $request->phone)->first();
             if ($getUser != null) {
-                return $this->jsonResponseGe('201', 'failure', 'Number Already Registerd With Us');
+                return response()->json(['status' => 201, 'message' => 'Number Already Registerd With Us'], 200);
             } else {
                 $otp = $this->rndgen();
                 $ids = DB::table('users')->insertGetId(['phone' => $request->phone, 'password' => Hash::make($request->phone)]);
                 Otp::create(['otp' => $otp, 'user_id' => $ids]);
-                return $this->jsonResponseGe('200', 'success', 'OTP Has to be Sent on Your Mobile Number =' . $otp);
+                return response()->json(['status' => 200, 'message' => 'OTP send successfully', 'otp' => $otp], 200);
             }
         } else {
             return $this->jsonResponseGe('202', 'error', 'Please provide valid Mobile Number');
@@ -152,9 +152,9 @@ class APIController extends Controller
             }
             $otp = $this->rndgen();
             Otp::create(['otp' => $otp, 'user_id' => $getUser]);
-            return $this->jsonResponseGe('200', 'success', 'OTP Has to be Sent on Your Mobile Number =' . $otp);
+            return response()->json(['status' => 200, 'message' => 'OTP send successfully', 'otp' => $otp], 200);
         } else {
-            return $this->jsonResponseGe('202', 'error', 'Please provide valid Mobile Number');
+            return response()->json(['status' => 202, 'message' => 'PLease provide valid Mobile Number'], 202);
         }
     }
     public function verifyOTP(Request $request)
@@ -476,15 +476,12 @@ class APIController extends Controller
     }
     public function addUpdateaddress(Request $request, $id = '')
     {
-        $user_id = $request->user();
+        $user_id = Auth::user()->id;
         try {
-            $this->validate($request, [
-                // 'country' => 'string|nullable',
-                'address' => 'string|required',
-                'address2' => 'string|nullable',
-                // 'state' => 'string|nullable',
-                'postcode' => 'numeric|nullable'
-            ]);
+            $validate = (isset($request->address) && $request->address != NULL) ? $request->address : 'Address Field Required';
+            $validate = (isset($request->address2) && $request->address2 != NULL) ? $request->address2 : 'Address Line Two Field Required';
+            $validate = (isset($request->postcode) && $request->postcode != NULL && is_numeric($request->postcode)) ? $request->postcode : 'Postcode Required';
+            
             $id = isset($request->id) ? $request->id : null;
             if (isset($id) && $id != null) {
                 $shippingAddress = ShippingAddress::where('id', $id)->update(['postcode' => $request->postcode, 'address' => $request->address, 'address2' => $request->address2, 'country' => 'India', 'state' => 'Maharashtra']);
