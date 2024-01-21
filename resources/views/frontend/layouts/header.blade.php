@@ -46,10 +46,10 @@
               </a>
             </div>
           </li>
-          <li>
+          <!-- <li>
             <i class='bx bx-time'></i>
             <span class="">{{strtoupper(get_settings('office_time'))}}</span>
-          </li>
+          </li> -->
           @auth
           <li class="">
             <a href="{{route('login')}}">
