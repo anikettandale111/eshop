@@ -67,19 +67,34 @@ class CartController extends Controller
                     $price += $product_stock->price - $discountAmount;
                     $quantity = $product_stock->qty;
                 }
+            }else{
+                $price += $product_stock->price;
+                $quantity = $product->stock;
             }
         } else {
-            $price += $product->purchase_price;
-            $quantity = $product->stock;
+            if(isset($product->discount) && $product->discount != ''){
+                if(isset($product->discount_type) && $product->discount_type == 'amount'){
+                    $price += $product->price - $product->discount;
+                    $quantity = $product->qty;
+                }else{
+                    $discountAmount = ($product->discount / 100) * $product->price;
+                    $price += $product->price - $discountAmount;
+                    $quantity = $product->qty;
+                }
+            }else{
+                $price += $product->purchase_price;
+                $quantity = $product->stock;
+            }
         }
 
         if ($request->session()->has('cart')) {
             if (count($request->session()->get('cart')) > 0) {
                 foreach ($request->session()->get('cart') as $key => $cartItem) {
                     if ($cartItem['id'] == $request['id'] && $cartItem['variation'] == $str) {
-                        $response['message'] = '<i  class="fas fa-exclamation-triangle"></i> Oops: you have already added in shopping cart';
-                        $response['status'] = 'already';
-                        return $response;
+                        // $response['message'] = '<i  class="fas fa-exclamation-triangle"></i> Oops: you have already added in shopping cart';
+                        // $response['status'] = 'already';
+                        // return $response;
+                        unset($request->session()->get('cart')[$key]);
                     }
                 }
             }
@@ -147,10 +162,46 @@ class CartController extends Controller
 
     public function cartUpdate(Request $request)
     {
+        
         $cart = $request->session()->get('cart', collect([]));
         $cart = $cart->map(function ($object, $key) use ($request) {
             if ($key == $request->key) {
+                $product = Product::find($object['product_id']);
+                $str = (isset($object['variation']) && $object['variation'] > 0) ? $object['variation'] : '';
+                $price = 0;
+                if ($str) {
+                    $product_stock = $product->stocks->where('id', $str)->first();
+                    $var_pkg = $product_stock->variant;
+                    if(isset($product->discount) && $product->discount != ''){
+                        if(isset($product->discount_type) && $product->discount_type == 'amount'){
+                            $price += $product_stock->price - $product->discount;
+                            $quantity = $product_stock->qty;
+                        }else{
+                            $discountAmount = ($product->discount / 100) * $product_stock->price;
+                            $price += $product_stock->price - $discountAmount;
+                            $quantity = $product_stock->qty;
+                        }
+                    }else{
+                        $price += $product_stock->price;
+                        $quantity = $product->stock;
+                    }
+                } else {
+                    if(isset($product->discount) && $product->discount != ''){
+                        if(isset($product->discount_type) && $product->discount_type == 'amount'){
+                            $price += $product->price - $product->discount;
+                            $quantity = $product->qty;
+                        }else{
+                            $discountAmount = ($product->discount / 100) * $product->price;
+                            $price += $product->price - $discountAmount;
+                            $quantity = $product->qty;
+                        }
+                    }else{
+                        $price += $product->purchase_price;
+                        $quantity = $product->stock;
+                    }
+                }
                 $object['quantity'] = $request->quantity;
+                $object['subtotal'] = ($request->quantity * $price);
             }
             return $object;
         });
@@ -173,7 +224,6 @@ class CartController extends Controller
         $str = '';
         $quantity = 0;
         $price = 0;
-
         // if ($request->has('color')) {
         //     $data['color'] = $request['color'];
         //     $str = str_replace(' ', '_', AttributeValue::where('color_code', $request['color'])->first()->name);
@@ -200,10 +250,24 @@ class CartController extends Controller
                     $price += $product_stock->price - $discountAmount;
                     $quantity = $product_stock->qty;
                 }
+            }else{
+                $price += $product_stock->price;
+                $quantity = $product->stock;
             }
         } else {
-            $price += $product->purchase_price;
-            $quantity = $product->stock;
+            if(isset($product->discount) && $product->discount != ''){
+                if(isset($product->discount_type) && $product->discount_type == 'amount'){
+                    $price += $product->price - $product->discount;
+                    $quantity = $product->qty;
+                }else{
+                    $discountAmount = ($product->discount / 100) * $product->price;
+                    $price += $product->price - $discountAmount;
+                    $quantity = $product->qty;
+                }
+            }else{
+                $price += $product->purchase_price;
+                $quantity = $product->stock;
+            }
         }
 
         return array('price' => \Helper::currency_converter($price * $request->quantity), 'quantity' => $quantity);

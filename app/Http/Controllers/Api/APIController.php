@@ -47,8 +47,7 @@ class APIController extends Controller
     public function jsonResponseGe($code, $status, $message, array $data = [])
     {
         return response()->json([
-            'status_code'    => $code,
-            'status'    => $status,
+            'status'    => $code,
             'message' => $message
         ]);
     }
@@ -57,11 +56,16 @@ class APIController extends Controller
         if (isset($request->phone) && is_numeric($request->phone) && strlen($request->phone) == 10) {
             $getUser = User::where('phone', $request->phone)->first();
             if ($getUser != null) {
+                if($getUser->status == 'inactive'){
+                    $otp = $this->rndgen();
+                    Otp::updateOrCreate(['user_id' => $getUser->id],['otp' => $otp]);
+                    return response()->json(['status' => 200, 'message' => 'OTP send successfully', 'otp' => $otp], 200);
+                }
                 return response()->json(['status' => 201, 'message' => 'Number Already Registerd With Us'], 200);
             } else {
                 $otp = $this->rndgen();
-                $ids = DB::table('users')->insertGetId(['phone' => $request->phone, 'password' => Hash::make($request->phone)]);
-                Otp::create(['otp' => $otp, 'user_id' => $ids]);
+                $ids = DB::table('users')->insertGetId(['phone' => $request->phone,'status'=>'inactive', 'password' => Hash::make($request->phone)]);
+                Otp::updateOrCreate(['user_id' => $ids],['otp' => $otp]);
                 return response()->json(['status' => 200, 'message' => 'OTP send successfully', 'otp' => $otp], 200);
             }
         } else {
@@ -74,8 +78,9 @@ class APIController extends Controller
             $getUser = User::where('phone', $request->phone)->first();
             if ($getUser != null) {
                 if (Hash::check($request->password, $getUser->password)) {
+                    User::where('phone', $request->phone)->update(['status' =>'active']);
                     $token = $getUser->createToken('AccessToken')->accessToken;
-                    return $this->jsonResponseGe('200', 'success', $token);
+                    return response()->json(['status' => 200,'message'=>'Login Success','token' => $token,'email'=>$getUser->email,'phone'=>$getUser->phone,'full_name'=>$getUser->full_name], 200);
                 } else {
                     return $this->jsonResponseGe('202', 'error', 'Invalid Login Credentials');
                 }
@@ -94,8 +99,9 @@ class APIController extends Controller
     public function rndgen()
     {
         do {
-            $num = sprintf('%06d', mt_rand(100, 999989));
+            $num = sprintf('%04d', mt_rand(1000, 9999));
         } while (preg_match("~^(\d)\\1\\1\\1|(\d)\\2\\2\\2$|0000~", $num));
+    
         return $num;
     }
     public function validateToken($request)
@@ -151,7 +157,7 @@ class APIController extends Controller
                 $getUser = $getUser->id;
             }
             $otp = $this->rndgen();
-            Otp::create(['otp' => $otp, 'user_id' => $getUser]);
+            Otp::firstOrNew(['otp' => $otp, 'user_id' => $getUser]);
             return response()->json(['status' => 200, 'message' => 'OTP send successfully', 'otp' => $otp], 200);
         } else {
             return response()->json(['status' => 202, 'message' => 'PLease provide valid Mobile Number'], 202);
@@ -159,7 +165,7 @@ class APIController extends Controller
     }
     public function verifyOTP(Request $request)
     {
-        if ((isset($request->phone) && is_numeric($request->phone) && strlen($request->phone) == 10) && (isset($request->otp_check) && is_numeric($request->otp_check) && strlen($request->otp_check) == 6)) {
+        if ((isset($request->phone) && is_numeric($request->phone) && strlen($request->phone) == 10) && (isset($request->otp_check) && is_numeric($request->otp_check) && strlen($request->otp_check) == 4)) {
             $getUser = User::where('phone', $request->phone)->first();
             if ($getUser != null) {
                 $checkOTP = Otp::where('otp', $request->otp_check)->where('user_id', $getUser->id)->first();
@@ -187,7 +193,7 @@ class APIController extends Controller
     }
     public function productByCategory($catid)
     {
-        $products = Product::where(['status' => 'active', 'cat_ids' => $catid])->first();
+        $products = Product::where(['status' => 'active', 'cat_ids' => $catid])->get();
         return response()->json(['status' => 200, 'message' => 'Products Listed successfully', 'products' => $products], 200);
     }
     public function productDetail(Request $request, $pslug)
@@ -223,6 +229,9 @@ class APIController extends Controller
         //     $request->session()->forget('cart_' . Auth::user()->id);
         // }
         $product = Product::find($request->id);
+        if($product == NULL){
+            return response()->json(['status' => 200, 'message' => 'Invalid product selected'], 200);
+        }
         $data = array();
         $data['id'] = $product->id;
         $str = (isset($request->variant) && $request->variant != null) ? $request->variant : '';
@@ -263,6 +272,7 @@ class APIController extends Controller
             $quantity = $product->stock;
         }
         $cart_sub_total = 0;
+        
         if ($request->session()->has('cart_' . Auth::user()->id)) {
             if (count($request->session()->get('cart_' . Auth::user()->id)) > 0) {
                 foreach ($request->session()->get('cart_' . Auth::user()->id) as $key => $cartItem) {
@@ -435,8 +445,14 @@ class APIController extends Controller
         $order['order_status'] = 'pending';
         $order['delivery_charge'] = Order::total_shipping_cost($cart);
         $order['note'] = $request->note;
-        $order->first_name = Auth::user()->first_name;
-        $order->last_name = Auth::user()->last_name;
+        if(isset(Auth::user()->full_name) && Auth::user()->full_name != NULL){
+            $user_name = explode(' ',Auth::user()->full_name);
+            $order->first_name = (isset($user_name[0])) ? $user_name[0] : 'Guest';
+            $order->last_name = (isset($user_name[0])) ? str_replace($user_name[0],'',Auth::user()->full_name) : ((isset(Auth::user()->full_name)) ? Auth::user()->full_name :'User');
+        }else{
+            $order->first_name = Auth::user()->full_name;
+            $order->last_name = Auth::user()->last_name;
+        }
         $order->email = Auth::user()->email;
         $order->phone = Auth::user()->phone;
         $order->country = 'India';
@@ -490,7 +506,7 @@ class APIController extends Controller
                 $shippingAddress = new ShippingAddress;
                 $shippingAddress->country = 'India';
                 $shippingAddress->state = 'Maharashtra';
-                $shippingAddress->user_id = $user_id->id;
+                $shippingAddress->user_id = $user_id;
                 $shippingAddress->postcode = $request->postcode;
                 $shippingAddress->address = $request->address;
                 $shippingAddress->address2 = $request->address2;
