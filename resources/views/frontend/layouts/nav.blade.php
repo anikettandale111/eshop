@@ -38,7 +38,7 @@
                         <i class='bx bx-phone-call'></i>
                     </a> -->
                     <a href="{{route('cart')}}" class="cart-link">
-                        <img src="{{asset('frontend/assets/images/icons/shoppingBag.svg')}}" alt="Shopping Bag Icon" class="img-icon">
+                        <i class='bx bxs-cart-alt bx-tada' style="font-size:35px"></i>
                         <span class="count-badge">{{session()->has('cart') ? count(session()->get('cart')) : 0}}</span>
                     </a>
                 </div>

@@ -6,18 +6,11 @@
       @endphp
       <a href="{{ route('product.detail', $item->slug) }}">
         @if ($item->product_label != null)
-        <div class="
-                @if ($item->product_label == 'hot') hot-tag
-                   @elseif($item->product_label == 'sale')
-                    sale-tag
-                    @else
-                    new-tag @endif
-                    ">
+        <div class="@if ($item->product_label == 'hot') hot-tag @elseif($item->product_label == 'sale') sale-tag @else new-tag @endif">
           {{ $item->product_label }}
         </div>
         @endif
         <img style="border:1px solid #ddd" src="{{ $item->thumbnail_image ? asset($item->thumbnail_image) : Helper::DefaultImage() }}" class="main-image" alt="image">
-
         <img style="border:1px solid #ddd" src="{{ $photo != null ? ($photo[0] != null ? asset($photo[0]) : asset($photo[1])) : Helper::DefaultImage() }}" class="hover-image" alt="image">
       </a>
     </div>

@@ -188,12 +188,12 @@ class APIController extends Controller
     }
     public function products()
     {
-        $products = Product::orderBy('id', 'DESC')->get();
+        $products = Product::with('stocks')->orderBy('id', 'DESC')->get();
         return response()->json(['status' => 200, 'message' => 'Products Listed successfully', 'products' => $products], 200);
     }
     public function productByCategory($catid)
     {
-        $products = Product::where(['status' => 'active', 'cat_ids' => $catid])->get();
+        $products = Product::with('stocks')->where(['status' => 'active', 'cat_ids' => $catid])->get();
         return response()->json(['status' => 200, 'message' => 'Products Listed successfully', 'products' => $products], 200);
     }
     public function productDetail(Request $request, $pslug)

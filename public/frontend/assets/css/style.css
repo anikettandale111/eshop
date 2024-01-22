@@ -1202,8 +1202,8 @@ textarea.form-control {
     }
     .navbar-area {
         border-top: 1px solid #EEEEEE;
-        padding-top: 15px;
-        padding-bottom: 15px
+        padding-top: 5px;
+        padding-bottom: 5px
     }
     .navbar-area.header-sticky {
         display: none

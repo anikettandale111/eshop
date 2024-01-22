@@ -17,7 +17,7 @@
                 @foreach (session('cart') as $key => $cartItem)
                 @php
                 $product = \App\Models\Product::find($cartItem['product_id']);
-                $product_stock = $product->stocks->where('variant', $cartItem['variation'])->first();
+                $product_stock = $product->stocks->where('id', $cartItem['variation'])->first();
                 $product_name_with_choice = $product->title;
                 if ($cartItem['variation'] != null) {
                 $product_name_with_choice = $product->title . ' - ' . $cartItem['variation'];
@@ -72,7 +72,7 @@
         @foreach (session('cart') as $key => $cartItem)
         @php
         $product = \App\Models\Product::find($cartItem['product_id']);
-        $product_stock = $product->stocks->where('variant', $cartItem['variation'])->first();
+        $product_stock = $product->stocks->where('id', $cartItem['variation'])->first();
         $product_name_with_choice = $product->title;
         @endphp
         <div class="cart-item row">
@@ -83,16 +83,8 @@
             </div>
             <div class="col-8 p-1">
                 <div class="d-flex justify-content-between">
-                    <h1 class="product-title"><a href="{{ route('product.detail', $cartItem['slug']) }}" target="_blank">{{ ucfirst($product->title) }}</a></h1>
+                    <h1 class="product-title"><a href="{{ route('product.detail', $cartItem['slug']) }}" target="_blank">{{ ucfirst($product->title) }} ({{$product_stock->variant}})</a></h1>
                     <a href="javascript:" onclick="removeFromCart({{ $key }})" class="remove pr-3"><i class='fa fa-times' style="color: #999999;"></i></a>
-                </div>
-                <div class="product-details">
-                    <div class="row">
-                        <div class="col-12">
-                            {{$cartItem['variation']}}
-                        </div>
-                    </div>
-
                 </div>
                 <div class="d-flex align-items-center mt-3">
                     <div class="mr-4 price">

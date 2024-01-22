@@ -106,8 +106,8 @@
             <h6 class="title title-simple text-left">Additional Information</h6>
             <div class="row">
                 <div class="col text-left">
-                    <label class="mb-3">Order Notes (optional)</label>
-                    <textarea class="form-control" cols="30" rows="6" name="note" placeholder="Notes about your order, e.g. special notes for delivery">{{ session()->has('comment') ? session()->get('comment') : old('note') }}</textarea>
+                    <label class="mb-3">Optional Notes</label>
+                    <textarea class="form-control" cols="30" rows="3" name="note" placeholder="Notes about your order, e.g. special notes for delivery">{{ session()->has('comment') ? session()->get('comment') : old('note') }}</textarea>
                 </div>
             </div>
         </div>
@@ -162,7 +162,7 @@
                 <div class="row summary mb-4">
                     <div class="col-sm-12 text-left">
                         <div class="payment accordion radio-type mt-3">
-                            <h6 class="summary-subtitle">Payment Methods</h6>
+                            <h6 class="summary-subtitle">Pay With</h6>
                             <ul class="payment-metho-radio d-flex">
                                 <li>
                                     <div class="radio-item_1">
@@ -173,7 +173,7 @@
                                 <li>
                                     <div class="radio-item_1">
                                         <input id="razor" value="razor" name="payment_method" type="radio" required>
-                                        <label for="razor" class="radio-label_1">Online Payment / UPI</label>
+                                        <label for="razor" class="radio-label_1">Online / UPI</label>
                                     </div>
                                 </li>
                             </ul>
