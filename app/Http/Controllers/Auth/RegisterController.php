@@ -49,8 +49,12 @@ class RegisterController extends Controller
      */
     protected function validator(array $data)
     {
+        if(isset($data['form_type']) && $data['form_type'] = 'register'){
+            session()->put('form_type',$data['form_type']);
+        }
         return Validator::make($data, [
             'full_name'=>'required|string',
+            'phone'=>'required|min:10|numeric|unique:users,phone',
             'email'=>'required|email|unique:users,email',
             'password'=>'min:4|required|confirmed',
         ]);
@@ -64,9 +68,11 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
+        session()->forget('form_type');
         return User::create([
             'full_name'=>$data['full_name'],
             'email'=>$data['email'],
+            'phone'=>$data['phone'],
             'password'=>Hash::make($data['password']),
         ]);
     }
