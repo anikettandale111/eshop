@@ -72,9 +72,9 @@ class APIController extends Controller
     {
         $post = [
             'key' => config('custom.custom.whatsapp_key'),
-            'mobileno' => $phone, //For International use Country Code
+            'mobileno' => $phone,
             'msg'   => config('custom.custom.otp_template') . $otp,
-            'type' => 'Text' //Text
+            'type' => 'Text'
         ];
         $ch = curl_init('https://message.richsol.com/api/v1/sendmessage');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -84,7 +84,7 @@ class APIController extends Controller
         if ($response->status == 'Success') {
             return true;
         } else {
-            $this->sendOTP($phone, $otp);
+            return false;
         }
     }
     public function register(Request $request)
@@ -94,7 +94,9 @@ class APIController extends Controller
             if ($getUser != null) {
                 if ($getUser->status == 'inactive') {
                     $otp = $this->rndgen();
-                    $this->sendOTP($request->phone, $otp);
+                    if ($this->sendOTP($request->phone, $otp) == false) {
+                        return response()->json(['status' => 201, 'message' => 'Invalid Mobile Number'], 200);
+                    }
                     Otp::updateOrCreate(['user_id' => $getUser->id], ['otp' => $otp]);
                     return response()->json(['status' => 200, 'message' => 'OTP send successfully', 'otp' => $otp], 200);
                 }
@@ -102,7 +104,9 @@ class APIController extends Controller
             } else {
                 $otp = $this->rndgen();
                 $ids = DB::table('users')->insertGetId(['phone' => $request->phone, 'status' => 'inactive', 'password' => Hash::make($request->phone)]);
-                $this->sendOTP($request->phone, $otp);
+                if ($this->sendOTP($request->phone, $otp) == false) {
+                    return response()->json(['status' => 201, 'message' => 'Invalid Mobile Number'], 200);
+                }
                 Otp::updateOrCreate(['user_id' => $ids], ['otp' => $otp]);
                 return response()->json(['status' => 200, 'message' => 'OTP send successfully', 'otp' => $otp], 200);
             }
@@ -194,7 +198,9 @@ class APIController extends Controller
                 $getUser = $getUser->id;
             }
             $otp = $this->rndgen();
-            $this->sendOTP($request->phone, $otp);
+            if ($this->sendOTP($request->phone, $otp) == false) {
+                return response()->json(['status' => 201, 'message' => 'Invalid Mobile Number'], 200);
+            }
             Otp::firstOrNew(['otp' => $otp, 'user_id' => $getUser]);
             return response()->json(['status' => 200, 'message' => 'OTP send successfully', 'otp' => $otp], 200);
         } else {
@@ -277,84 +283,88 @@ class APIController extends Controller
         // if ($request->session()->has('cart_'.Auth::user()->id)) {
         //     $request->session()->forget('cart_' . Auth::user()->id);
         // }
-        $product = Product::find($request->id);
-        if ($product == NULL) {
-            return response()->json(['status' => 200, 'message' => 'Invalid product selected'], 200);
-        }
-        $data = array();
-        $data['id'] = $product->id;
-        $str = (isset($request->variant) && $request->variant != null) ? $request->variant : '';
-        $variations = [];
-        $price = 0;
-        $additional_charge = 0;
-
-        //check the color enabled or disabled for the product
-        if ($request->has('color')) {
-            $data['color'] = $request['color'];
-            $str = AttributeValue::where('color_code', $request['color'])->first()->name;
-            $variations['color'] = str_replace(' ', '_', $str);
-        }
-        //Gets all the choice values of customer choice option and generate a string like Black-S-Cotton
-        // if (json_decode($product->choice_options)) {
-        //     foreach (json_decode($product->choice_options) as $key => $choice) {
-        //         //                $data[$choice->name] = $request[$choice->name];
-        //         //                $variations[$choice->title] = $request[$choice->name];
-        //         if ($str != null) {
-        //             $str .= '-' . str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
-        //         } else {
-        //             $str .= str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
-        //         }
-        //     }
-        // }
-
-        $data['variation'] = $str;
-        if ($str) {
-            $product_stock = $product->stocks->where('variant', $str)->first();
-            if ($product_stock) {
-                $price += $product_stock->price;
-                $quantity = $product_stock->qty;
-            } else {
-                return response()->json(['status' => 200, 'message' => 'Sorry This is Out of stock'], 200);
+        $requestCart = [];   
+        foreach($requestCart AS $key => $product)
+        {
+            $product = Product::find($request->id);
+            if ($product == NULL) {
+                return response()->json(['status' => 200, 'message' => 'Invalid product selected'], 200);
             }
-        } else {
-            $price += $product->purchase_price;
-            $quantity = $product->stock;
-        }
-        $cart_sub_total = 0;
+            $data = array();
+            $data['id'] = $product->id;
+            $str = (isset($request->variant) && $request->variant != null) ? $request->variant : '';
+            $variations = [];
+            $price = 0;
+            $additional_charge = 0;
 
-        if ($request->session()->has('cart_' . Auth::user()->id)) {
-            if (count($request->session()->get('cart_' . Auth::user()->id)) > 0) {
-                foreach ($request->session()->get('cart_' . Auth::user()->id) as $key => $cartItem) {
-                    if ($cartItem['id'] == $request['id'] && $cartItem['variation'] == $str) {
-                        unset($request->session()->get('cart_' . Auth::user()->id)[$key]);
-                        // $cartItem['id'] = $request->quantity;
-                        // $response['message'] = '<i  class="fas fa-exclamation-triangle"></i> Oops: you have already added in shopping cart';
-                        // $cart = $request->session()->get('cart_'.Auth::user()->id, collect([]));
-                        // $response['status'] = $cart;
-                        // return json_encode($response);
+            //check the color enabled or disabled for the product
+            if ($request->has('color')) {
+                $data['color'] = $request['color'];
+                $str = AttributeValue::where('color_code', $request['color'])->first()->name;
+                $variations['color'] = str_replace(' ', '_', $str);
+            }
+            //Gets all the choice values of customer choice option and generate a string like Black-S-Cotton
+            // if (json_decode($product->choice_options)) {
+            //     foreach (json_decode($product->choice_options) as $key => $choice) {
+            //         //                $data[$choice->name] = $request[$choice->name];
+            //         //                $variations[$choice->title] = $request[$choice->name];
+            //         if ($str != null) {
+            //             $str .= '-' . str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
+            //         } else {
+            //             $str .= str_replace(' ', '', $request['attribute_id_' . $choice->attribute_id]);
+            //         }
+            //     }
+            // }
+
+            $data['variation'] = $str;
+            if ($str) {
+                $product_stock = $product->stocks->where('variant', $str)->first();
+                if ($product_stock) {
+                    $price += $product_stock->price;
+                    $quantity = $product_stock->qty;
+                } else {
+                    return response()->json(['status' => 200, 'message' => 'Sorry This is Out of stock'], 200);
+                }
+            } else {
+                $price += $product->purchase_price;
+                $quantity = $product->stock;
+            }
+            $cart_sub_total = 0;
+
+            if ($request->session()->has('cart_' . Auth::user()->id)) {
+                if (count($request->session()->get('cart_' . Auth::user()->id)) > 0) {
+                    foreach ($request->session()->get('cart_' . Auth::user()->id) as $key => $cartItem) {
+                        if ($cartItem['id'] == $request['id'] && $cartItem['variation'] == $str) {
+                            unset($request->session()->get('cart_' . Auth::user()->id)[$key]);
+                            // $cartItem['id'] = $request->quantity;
+                            // $response['message'] = '<i  class="fas fa-exclamation-triangle"></i> Oops: you have already added in shopping cart';
+                            // $cart = $request->session()->get('cart_'.Auth::user()->id, collect([]));
+                            // $response['status'] = $cart;
+                            // return json_encode($response);
+                        }
+                        $cart_sub_total += $cartItem['subtotal'];
                     }
-                    $cart_sub_total += $cartItem['subtotal'];
                 }
             }
-        }
-        $shipping_id = 1;
-        $data['product_id'] = $product->id;
-        $data['quantity'] = $request['quantity'];
-        $data['slug'] = $product->slug;
-        $data['title'] = $product->title;
-        $data['discount'] = $data['quantity'] * \Helper::get_product_discount($product, $price);
-        $data['image'] = $product->thumbnail_image;
-        $data['price'] = $price + ($additional_charge);
-        $data['subtotal'] = ($data['quantity'] * $data['price']) - $data['discount'];
-        $data['shipping_method_id'] = $shipping_id;
-        $data['shipping_cost'] = config('custom.custom.shipping_charges');
+            $shipping_id = 1;
+            $data['product_id'] = $product->id;
+            $data['quantity'] = $request['quantity'];
+            $data['slug'] = $product->slug;
+            $data['title'] = $product->title;
+            $data['discount'] = $data['quantity'] * \Helper::get_product_discount($product, $price);
+            $data['image'] = $product->thumbnail_image;
+            $data['price'] = $price + ($additional_charge);
+            $data['subtotal'] = ($data['quantity'] * $data['price']) - $data['discount'];
+            $data['shipping_method_id'] = $shipping_id;
+            $data['shipping_cost'] = config('custom.custom.shipping_charges');
 
-        if ($request->session()->has('cart_' . Auth::user()->id)) {
-            $cart = $request->session()->get('cart_' . Auth::user()->id, collect([]));
-            $cart->push($data);
-        } else {
-            $cart = collect([$data]);
-            $request->session()->put('cart_' . Auth::user()->id, $cart);
+            if ($request->session()->has('cart_' . Auth::user()->id)) {
+                $cart = $request->session()->get('cart_' . Auth::user()->id, collect([]));
+                $cart->push($data);
+            } else {
+                $cart = collect([$data]);
+                $request->session()->put('cart_' . Auth::user()->id, $cart);
+            }
         }
         return response()->json(['status' => 200, 'message' => 'Product Added to Cart', 'cart' => $cart], 200);
     }
