@@ -283,17 +283,20 @@ class APIController extends Controller
         // if ($request->session()->has('cart_'.Auth::user()->id)) {
         //     $request->session()->forget('cart_' . Auth::user()->id);
         // }
-        $requestCart = [];   
-        foreach($requestCart AS $key => $product)
+        $requestCart = json_decode($request->storage_cart);   
+        $data = array();
+        $variations = [];
+        foreach($requestCart AS $key => $prod)
         {
+            $request['id'] = $prod->id;
+            $request['quantity'] = $prod->qty;
+            $request['variant'] = $prod->variant;
             $product = Product::find($request->id);
             if ($product == NULL) {
                 return response()->json(['status' => 200, 'message' => 'Invalid product selected'], 200);
             }
-            $data = array();
             $data['id'] = $product->id;
             $str = (isset($request->variant) && $request->variant != null) ? $request->variant : '';
-            $variations = [];
             $price = 0;
             $additional_charge = 0;
 
@@ -366,7 +369,7 @@ class APIController extends Controller
                 $request->session()->put('cart_' . Auth::user()->id, $cart);
             }
         }
-        return response()->json(['status' => 200, 'message' => 'Product Added to Cart', 'cart' => $cart], 200);
+        return response()->json(['status' => 200, 'message' => 'Product Added to Cart', 'cart' => [$cart]], 200);
     }
     public function cartUpdate(Request $request)
     {
