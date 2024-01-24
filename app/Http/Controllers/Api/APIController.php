@@ -51,21 +51,59 @@ class APIController extends Controller
             'message' => $message
         ]);
     }
+    public function isDataOneInDataTwo($dataOne, $dataTwo)
+    {
+        foreach ($dataTwo as $key => $item) {
+            if ($item['id'] == $dataOne[0]['id'] && $item['variant'] == $dataOne[0]['variant']) {
+                unset($dataTwo[$key]);
+                unset($dataTwo->$key);
+            }
+        }
+        return array_merge($dataTwo, $dataOne);
+    }
+    public function checkDuplicateCart(Request $request)
+    {
+        $new_product = $request->new_product;
+        $storage_cart = $request->storage_cart;
+        $response = $this->isDataOneInDataTwo($new_product, $storage_cart);
+        return response()->json(['status' => 200, 'newCart' => $response], 200);
+    }
+    public function sendOTP($phone, $otp)
+    {
+        $post = [
+            'key' => config('custom.custom.whatsapp_key'),
+            'mobileno' => $phone, //For International use Country Code
+            'msg'   => config('custom.custom.otp_template') . $otp,
+            'type' => 'Text' //Text
+        ];
+        $ch = curl_init('https://message.richsol.com/api/v1/sendmessage');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        $response = json_decode(curl_exec($ch));
+        curl_close($ch);
+        if ($response->status == 'Success') {
+            return true;
+        } else {
+            $this->sendOTP($phone, $otp);
+        }
+    }
     public function register(Request $request)
     {
         if (isset($request->phone) && is_numeric($request->phone) && strlen($request->phone) == 10) {
             $getUser = User::where('phone', $request->phone)->first();
             if ($getUser != null) {
-                if($getUser->status == 'inactive'){
+                if ($getUser->status == 'inactive') {
                     $otp = $this->rndgen();
-                    Otp::updateOrCreate(['user_id' => $getUser->id],['otp' => $otp]);
+                    $this->sendOTP($request->phone, $otp);
+                    Otp::updateOrCreate(['user_id' => $getUser->id], ['otp' => $otp]);
                     return response()->json(['status' => 200, 'message' => 'OTP send successfully', 'otp' => $otp], 200);
                 }
                 return response()->json(['status' => 201, 'message' => 'Number Already Registerd With Us'], 200);
             } else {
                 $otp = $this->rndgen();
-                $ids = DB::table('users')->insertGetId(['phone' => $request->phone,'status'=>'inactive', 'password' => Hash::make($request->phone)]);
-                Otp::updateOrCreate(['user_id' => $ids],['otp' => $otp]);
+                $ids = DB::table('users')->insertGetId(['phone' => $request->phone, 'status' => 'inactive', 'password' => Hash::make($request->phone)]);
+                $this->sendOTP($request->phone, $otp);
+                Otp::updateOrCreate(['user_id' => $ids], ['otp' => $otp]);
                 return response()->json(['status' => 200, 'message' => 'OTP send successfully', 'otp' => $otp], 200);
             }
         } else {
@@ -78,9 +116,9 @@ class APIController extends Controller
             $getUser = User::where('phone', $request->phone)->first();
             if ($getUser != null) {
                 if (Hash::check($request->password, $getUser->password)) {
-                    User::where('phone', $request->phone)->update(['status' =>'active']);
+                    User::where('phone', $request->phone)->update(['status' => 'active']);
                     $token = $getUser->createToken('AccessToken')->accessToken;
-                    return response()->json(['status' => 200,'message'=>'Login Success','token' => $token,'email'=>$getUser->email,'phone'=>$getUser->phone,'full_name'=>$getUser->full_name], 200);
+                    return response()->json(['status' => 200, 'message' => 'Login Success', 'token' => $token, 'email' => $getUser->email, 'phone' => $getUser->phone, 'full_name' => $getUser->full_name], 200);
                 } else {
                     return $this->jsonResponseGe('202', 'error', 'Invalid Login Credentials');
                 }
@@ -101,7 +139,6 @@ class APIController extends Controller
         do {
             $num = sprintf('%04d', mt_rand(1000, 9999));
         } while (preg_match("~^(\d)\\1\\1\\1|(\d)\\2\\2\\2$|0000~", $num));
-    
         return $num;
     }
     public function validateToken($request)
@@ -139,7 +176,7 @@ class APIController extends Controller
                 // Add more fields if needed
 
                 $user->save();
-                return response()->json(['status' => 200, 'message' => 'Profile updated successfully', 'user' => $user], 200);
+                return response()->json(['status' => 200, 'message' => 'Profile updated successfully', 'user' => [$user]], 200);
             } catch (ValidationException $e) {
                 // Validation failed, return JSON response with errors
                 return response()->json(['status' => 422, 'message' => 'Validation failed', 'errors' => $e->errors()], 200);
@@ -157,6 +194,7 @@ class APIController extends Controller
                 $getUser = $getUser->id;
             }
             $otp = $this->rndgen();
+            $this->sendOTP($request->phone, $otp);
             Otp::firstOrNew(['otp' => $otp, 'user_id' => $getUser]);
             return response()->json(['status' => 200, 'message' => 'OTP send successfully', 'otp' => $otp], 200);
         } else {
@@ -170,6 +208,7 @@ class APIController extends Controller
             if ($getUser != null) {
                 $checkOTP = Otp::where('otp', $request->otp_check)->where('user_id', $getUser->id)->first();
                 if ($checkOTP != null) {
+                    Otp::where('otp', $request->otp_check)->where('user_id', $getUser->id)->delete();
                     return $this->jsonResponseGe('200', 'success', 'OTP Verified Successfully.');
                 } else {
                     return $this->jsonResponseGe('201', 'failure', 'OTP is Invalid');
@@ -199,11 +238,21 @@ class APIController extends Controller
     public function productDetail(Request $request, $pslug)
     {
         $product = Product::with('stocks', 'rel_prods')->where('slug', $pslug)->first();
+        $stocks = [];
+        $rel_prods = [];
+        if (isset($product->stocks) && count($product->stocks)) {
+            $stocks = $product->stocks;
+            unset($product->stocks);
+        }
+        if (isset($product->rel_prods) && count($product->rel_prods)) {
+            $rel_prods = $product->rel_prods;
+            unset($product->rel_prods);
+        }
         $reviews = $product->reviews()->orderBy('id', 'DESC')->get();
         $display_reviews = $product->reviews()->take(2)->latest()->get();
         $recent_view = null;
         if ($product) {
-            return response()->json(['status' => 200, 'message' => 'Products Details get successfully', 'display_reviews' => $display_reviews, 'products' => $product, 'reviews' => $reviews], 200);
+            return response()->json(['status' => 200, 'message' => 'Products Details get successfully', 'display_reviews' => $display_reviews, 'products' => [$product], 'stocks' => $stocks, 'rel_prods' => $rel_prods, 'reviews' => $reviews], 200);
         } else {
             return response()->json(['status' => 200, 'message' => 'Product detail not found'], 201);
         }
@@ -229,7 +278,7 @@ class APIController extends Controller
         //     $request->session()->forget('cart_' . Auth::user()->id);
         // }
         $product = Product::find($request->id);
-        if($product == NULL){
+        if ($product == NULL) {
             return response()->json(['status' => 200, 'message' => 'Invalid product selected'], 200);
         }
         $data = array();
@@ -272,7 +321,7 @@ class APIController extends Controller
             $quantity = $product->stock;
         }
         $cart_sub_total = 0;
-        
+
         if ($request->session()->has('cart_' . Auth::user()->id)) {
             if (count($request->session()->get('cart_' . Auth::user()->id)) > 0) {
                 foreach ($request->session()->get('cart_' . Auth::user()->id) as $key => $cartItem) {
@@ -445,11 +494,11 @@ class APIController extends Controller
         $order['order_status'] = 'pending';
         $order['delivery_charge'] = Order::total_shipping_cost($cart);
         $order['note'] = $request->note;
-        if(isset(Auth::user()->full_name) && Auth::user()->full_name != NULL){
-            $user_name = explode(' ',Auth::user()->full_name);
+        if (isset(Auth::user()->full_name) && Auth::user()->full_name != NULL) {
+            $user_name = explode(' ', Auth::user()->full_name);
             $order->first_name = (isset($user_name[0])) ? $user_name[0] : 'Guest';
-            $order->last_name = (isset($user_name[0])) ? str_replace($user_name[0],'',Auth::user()->full_name) : ((isset(Auth::user()->full_name)) ? Auth::user()->full_name :'User');
-        }else{
+            $order->last_name = (isset($user_name[0])) ? str_replace($user_name[0], '', Auth::user()->full_name) : ((isset(Auth::user()->full_name)) ? Auth::user()->full_name : 'User');
+        } else {
             $order->first_name = Auth::user()->full_name;
             $order->last_name = Auth::user()->last_name;
         }
@@ -497,7 +546,7 @@ class APIController extends Controller
             $validate = (isset($request->address) && $request->address != NULL) ? $request->address : 'Address Field Required';
             $validate = (isset($request->address2) && $request->address2 != NULL) ? $request->address2 : 'Address Line Two Field Required';
             $validate = (isset($request->postcode) && $request->postcode != NULL && is_numeric($request->postcode)) ? $request->postcode : 'Postcode Required';
-            
+
             $id = isset($request->id) ? $request->id : null;
             if (isset($id) && $id != null) {
                 $shippingAddress = ShippingAddress::where('id', $id)->update(['postcode' => $request->postcode, 'address' => $request->address, 'address2' => $request->address2, 'country' => 'India', 'state' => 'Maharashtra']);

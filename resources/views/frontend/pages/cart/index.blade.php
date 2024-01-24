@@ -1,6 +1,9 @@
 @extends('frontend.layouts.master')
 <style>
     @media screen and (max-width: 991px) {
+        .bx-tada{
+            font-size: 25px;
+        }
         .mobile__cart-table .cart-item .product-title {
             font-size: 22px;
         }

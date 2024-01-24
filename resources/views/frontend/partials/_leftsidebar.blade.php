@@ -18,20 +18,20 @@
                     <ul>
                         <li>
                             <a href="{{route('home')}}" class="navigation-item">
-                                <i class='bx bx-home-alt bx-tada' style="font-size:35px"></i>
+                                <i class='bx bx-home-alt bx-tada'></i>
                                 <span> Home </span>
                             </a>
                         </li>
                         @auth
                         <li>
                             <a href="{{route('user.dashboard')}}" class="text-uppercase">
-                                <i class='bx bxs-dashboard bx-tada' style="font-size:35px"></i><span>Dashboard</span>
+                                <i class='bx bxs-dashboard bx-tada'></i><span>Dashboard</span>
                             </a>
                         </li>
-                        <li><a id="account-tab" data-toggle="pill" href="#account"><i class="bx bxs-user bx-tada" style="font-size:35px"></i><span>Profile</span></a></li>
-                        <li><a class="@if ($_GET != null && $_GET['active'] == 'order') active @endif" id="orders-tab" data-toggle="pill" href="#orders"><i class="bx bxs-layer" style="font-size:35px"></i><span>Orders</span></a></li>
-                        <li><a id="address-tab" data-toggle="pill" href="#address"><i class="bx bx-map bx-tada" style="font-size:35px"></i><span>Address</span></a></li>
-                        <li><a id="wishlist-tab" data-toggle="pill" href="#wishlist"><i class="bx bxs-heart-circle bx-spin" style="font-size:35px"></i><span>Wishlist</span></a></li>
+                        <li><a id="account-tab" data-toggle="pill" href="#account"><i class="bx bxs-user bx-tada"></i><span>Profile</span></a></li>
+                        <li><a class="@if ($_GET != null && $_GET['active'] == 'order') active @endif" id="orders-tab" data-toggle="pill" href="#orders"><i class="bx bxs-layer"></i><span>Orders</span></a></li>
+                        <li><a id="address-tab" data-toggle="pill" href="#address"><i class="bx bx-map bx-tada"></i><span>Address</span></a></li>
+                        <li><a id="wishlist-tab" data-toggle="pill" href="#wishlist"><i class="bx bxs-heart-circle bx-spin"></i><span>Wishlist</span></a></li>
                         @endauth
                         @php
                         $categories=\App\Models\Category::with('subcategories')->where(['status'=>'active','is_menu'=>1,'level'=>0,'parent_id'=>0])->limit(6)->orderBy('id','DESC')->get()
@@ -45,7 +45,7 @@
                                 @endif
                                 >
                                 <!-- <img src="{{asset($cat->icon_path)}}"> -->
-                                <i class='bx bxs-hand-right bx-tada' style="font-size:35px"></i>
+                                <i class='bx bxs-hand-right bx-tada'></i>
                                 <span> {{ucfirst($cat->title)}} </span>
                                 @if($cat->subcategories->count()>0)
                                 <i class='bx bx-chevron-right'></i>
@@ -57,7 +57,7 @@
                         @auth
                         <li>
                             <a href="{{route('login')}}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="text-uppercase">
-                                <i class='bx bx-log-out-circle bx-tada' style="font-size:35px"></i><span>Logout</span>
+                                <i class='bx bx-log-out-circle bx-tada'></i><span>Logout</span>
                             </a>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                 @csrf
@@ -66,12 +66,12 @@
                         @else
                         <li>
                             <a href="{{route('login')}}" class="text-uppercase">
-                                <i class='bx bx-log-in-circle bx-tada' style="font-size:35px"></i><span>Sign In</span>
+                                <i class='bx bx-log-in-circle bx-tada'></i><span>Sign In</span>
                             </a>
                         </li>
                         <li>
                             <a href="{{route('register')}}" class="text-uppercase">
-                                <i class='bx bx-log-in-circle bx-tada' style="font-size:35px"></i><span>Sign Up</span>
+                                <i class='bx bx-log-in-circle bx-tada'></i><span>Sign Up</span>
                             </a>
                         </li>
                         @endauth
@@ -79,11 +79,11 @@
                         <li style="margin-top: 20px;">
                             <div class="single-footer-widget footer-contact">
                                 <ul class="social-link">
-                                    <li><a href="{{get_settings('facebook_url')}}" class="d-block" target="_blank"><i class='bx bxl-facebook bx-tada' style="font-size:35px"></i></a></li>
-                                    <li><a href="{{get_settings('twitter_url')}}" class="d-block" target="_blank"><i class='bx bxl-twitter bx-tada' style="font-size:35px"></i></a></li>
-                                    <li><a href="{{get_settings('instagram_url')}}" class="d-block" target="_blank"><i class='bx bxl-instagram bx-tada' style="font-size:35px"></i></a>
+                                    <li><a href="{{get_settings('facebook_url')}}" class="d-block" target="_blank"><i class='bx bxl-facebook bx-tada'></i></a></li>
+                                    <li><a href="{{get_settings('twitter_url')}}" class="d-block" target="_blank"><i class='bx bxl-twitter bx-tada'></i></a></li>
+                                    <li><a href="{{get_settings('instagram_url')}}" class="d-block" target="_blank"><i class='bx bxl-instagram bx-tada'></i></a>
                                     </li>
-                                    <li><a href="{{get_settings('youtube_url')}}" class="d-block" target="_blank"><i class='bx bxl-youtube bx-tada' style="font-size:35px"></i></a>
+                                    <li><a href="{{get_settings('youtube_url')}}" class="d-block" target="_blank"><i class='bx bxl-youtube bx-tada'></i></a>
                                     </li>
                                 </ul>
                             </div>

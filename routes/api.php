@@ -51,6 +51,8 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('cart/update', [\App\Http\Controllers\Api\APIController::class, 'cartUpdate']);
     // Add to Cart
     Route::post('cart/add', [\App\Http\Controllers\Api\APIController::class, 'cartAdd']);
+    // Cart Duplicate Check
+    Route::post('cart/duplicate', [\App\Http\Controllers\Api\APIController::class, 'checkDuplicateCart']);
     // Checkout
     Route::post('checkout', [\App\Http\Controllers\Api\APIController::class, 'checkoutStore']);
 });
