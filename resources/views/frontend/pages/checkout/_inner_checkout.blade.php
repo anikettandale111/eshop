@@ -166,16 +166,16 @@
                             <ul class="payment-metho-radio d-flex">
                                 <li>
                                     <div class="radio-item_1">
-                                        <input id="cashOnDelivery" value="cod" name="payment_method" type="radio" required>
+                                        <input id="cashOnDelivery" value="cod" name="payment_method" type="radio" required checked>
                                         <label for="cashOnDelivery" class="radio-label_1">Cash on Delivery</label>
                                     </div>
                                 </li>
-                                <li>
+                                <!-- <li>
                                     <div class="radio-item_1">
                                         <input id="razor" value="razor" name="payment_method" type="radio" required>
                                         <label for="razor" class="radio-label_1">Online / UPI</label>
                                     </div>
-                                </li>
+                                </li> -->
                             </ul>
                         </div>
                     </div>

@@ -35,6 +35,8 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('products', [\App\Http\Controllers\Api\APIController::class, 'products']);
     // Address Listing
     Route::get('address', [\App\Http\Controllers\Api\APIController::class, 'listAddress']);
+    // Order History
+    Route::get('order-history/{order_id?}', [\App\Http\Controllers\Api\APIController::class, 'orderHistory']);
     // Address add OR update 
     Route::post('addupdateadd', [\App\Http\Controllers\Api\APIController::class, 'addUpdateaddress']);
     // Product By Category
@@ -55,6 +57,8 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('cart/duplicate', [\App\Http\Controllers\Api\APIController::class, 'checkDuplicateCart']);
     // Checkout
     Route::post('checkout', [\App\Http\Controllers\Api\APIController::class, 'checkoutStore']);
+    // Update Order Status
+    Route::post('order-status-update', [\App\Http\Controllers\Api\APIController::class, 'orderStatusUpdate']);
 });
 
 //product review
