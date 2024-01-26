@@ -133,12 +133,19 @@ class OrderController extends Controller
                 $generateOrder_nr = Str::upper(config('custom.custom.order_prefix') . str_pad(1, 4, "0", STR_PAD_RIGHT));
             }
         }
+
+        $carttotal = 0;$disc=0;
+        foreach ($cart as $key => $c) {
+            $product = Product::find($c->id);
+            $carttotal += $c->qty * $c->price;
+            $disc += \Helper::get_product_discount($product, $c->price) * $c->qty;
+        }
         $order['order_number'] = $generateOrder_nr;
         $shipping_cost = config('custom.custom.shipping_charges');
         $order['coupon'] = $coupon_discount;
         $order['quantity'] = count($cart);
-        $order['subtotal'] = Order::cart_grand_total($cart);
-        $order['total_amount'] = Order::cart_grand_total($cart) - $coupon_discount + $shipping_cost;
+        $order['subtotal'] = $carttotal - $disc - $coupon_discount;
+        $order['total_amount'] = $carttotal + config('custom.custom.shipping_charges');
         $order['payment_method'] = $request->payment_method;
         $order['payment_status'] = 'unpaid';
         $order['order_status'] = 'pending';

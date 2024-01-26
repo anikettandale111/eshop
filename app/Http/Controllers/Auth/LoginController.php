@@ -43,4 +43,19 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
     }
+    public function username()
+    {
+        return 'phone'; // Change 'mobile' to the actual column name for mobile numbers
+    }
+    public function credentials(Request $request)
+    {
+        return ['phone'=>$request->phone,'password'=>$request->phone,'status'=>'active'];
+    }
+    protected function validateLogin(Request $request)
+    {
+        $request->validate([
+            $this->username() => 'required|string',
+            'password' => 'string',
+        ]);
+    }
 }

@@ -358,7 +358,7 @@ class APIController extends Controller
         $order = Order::where(['order_number' => $request->order_number, 'id' => $request->order_id])->update(['payment_method' =>
         strtolower($request->payment_method)]);
         if ($order) {
-            return response()->json(['status' => 200, 'message' => 'Order Confirm Succesfully'], 200);
+            return response()->json(['status' => 200, 'message' => 'Order Placed Succesfully'], 200);
         } else {
             return response()->json(['status' => 201, 'message' => 'Order ID not found'], 200);
         }
@@ -414,9 +414,9 @@ class APIController extends Controller
                     $msg = 'Your Cart is empty now.';
                 }
             }
-            return response()->json(['status' => 200, 'message' => $msg, 'cart' => $cart, 'status' => 200], 200);
+            return response()->json(['status' => 200, 'message' => $msg, 'cart' => $cart], 200);
         }
-        return response()->json(['status' => 200, 'message' => $msg, 'cart' => [], 'status' => 200], 200);
+        return response()->json(['status' => 200, 'message' => $msg, 'cart' => []], 200);
     }
     public function orderHistory($order_id=''){
         if(isset($order_id) && $order_id != null){
@@ -425,7 +425,7 @@ class APIController extends Controller
             $order = Order::with('orderDetails')->where(['user_id'=>Auth::user()->id])->get();
         }
         $msg = ($order != null) ? 'Order Details Listed':'Sorry, No Orders Found';
-        return response()->json(['status' => 200, 'message' => $msg, 'cart' => $order, 'status' => 200], 200);
+        return response()->json(['status' => 200, 'message' => $msg, 'order_history' => $order], 200);
     }
     public function checkoutStore(Request $request)
     {
@@ -522,17 +522,19 @@ class APIController extends Controller
         if (count($cart) == 0) {
             return response()->json(['status' => 200, 'message' => 'Please add product to checkout'], 200);
         }
-        $carttotal = 0;
+        $carttotal = 0;$disc=0;
         foreach ($cart as $key => $c) {
+            $product = Product::find($c->id);
             $carttotal += $c->qty * $c->price;
+            $disc += \Helper::get_product_discount($product, $c->price) * $c->qty;
         }
         $orderObj = DB::table('orders')->select('order_number')->latest('id')->first();
         if ($orderObj) {
             $orderNr = $orderObj->order_number;
             $removed1char = substr($orderNr, 6);
-            $generateOrder_nr = $stpad = config('custom.custom.order_prefix') . str_pad($removed1char + 1, 3, "0", STR_PAD_LEFT);
+            $generateOrder_nr = config('custom.custom.order_prefix') . str_pad($removed1char + 1, 3, "0", STR_PAD_LEFT);
         } else {
-            $generateOrder_nr = Str::upper(config('custom.custom.order_prefix') . str_pad(1, 4, "0", STR_PAD_RIGHT));
+            $generateOrder_nr = config('custom.custom.order_prefix') . str_pad(1, 4, "0", STR_PAD_RIGHT);
         }
 
         $response = [];
@@ -542,8 +544,8 @@ class APIController extends Controller
         $order['order_number'] = $generateOrder_nr;
         $order['coupon'] = $coupon_discount;
         $order['quantity'] = count($cart);
-        $order['subtotal'] = $carttotal;
-        $order['total_amount'] = $carttotal - $coupon_discount + config('custom.custom.shipping_charges');
+        $order['subtotal'] = $carttotal - $disc - $coupon_discount;
+        $order['total_amount'] = $carttotal + config('custom.custom.shipping_charges');
         $order['payment_method'] = 'cod';
         $order['payment_status'] = 'unpaid';
         $order['order_status'] = 'pending';
@@ -583,8 +585,9 @@ class APIController extends Controller
                 $order_detail->order_id = $order->id;
                 $order_detail->product_id = $product->id;
                 $order_detail->product_details = $product;
-                $order_detail->variation = $cartItem->variant_id;
-                $order_detail->price = $cartItem->price * $cartItem->qty;
+                $order_detail->variation = $cartItem->variant;
+                $order_detail->variant = $cartItem->variant_id;
+                $order_detail->price = ($cartItem->price * $cartItem->qty) - \Helper::get_product_discount($product, $cartItem->price) * $cartItem->qty;
                 $product_total += $cartItem->price * $cartItem->qty;
                 $order_detail->quantity = $cartItem->qty;
                 $order_detail->discount = \Helper::get_product_discount($product, $cartItem->price) * $cartItem->qty;

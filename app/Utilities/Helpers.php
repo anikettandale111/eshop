@@ -176,6 +176,25 @@ class Helper
         }
         return floatval($discount);
     }
+    public static function sendMessage($msg, $phone)
+    {
+        $post = [
+            'key' => config('custom.custom.whatsapp_key'),
+            'mobileno' => $phone,
+            'msg'   => $msg,
+            'type' => 'Text'
+        ];
+        $ch = curl_init('https://message.richsol.com/api/v1/sendmessage');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+        $response = json_decode(curl_exec($ch));
+        curl_close($ch);
+        if ($response->status == 'Success') {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 if (!function_exists('appMode')) {
