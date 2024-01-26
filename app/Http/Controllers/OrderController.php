@@ -8,6 +8,7 @@ use App\Models\Admin;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Product;
+use App\Models\ProductStock;
 use App\OrdersExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -136,9 +137,9 @@ class OrderController extends Controller
 
         $carttotal = 0;$disc=0;
         foreach ($cart as $key => $c) {
-            $product = Product::find($c->id);
-            $carttotal += $c->qty * $c->price;
-            $disc += \Helper::get_product_discount($product, $c->price) * $c->qty;
+            $product = Product::find($c['id']);
+            $carttotal += $c['quantity'] * $c['price'];
+            $disc += \Helper::get_product_discount($product, $c['price']) * $c['quantity'];
         }
         $order['order_number'] = $generateOrder_nr;
         $shipping_cost = config('custom.custom.shipping_charges');
@@ -179,6 +180,9 @@ class OrderController extends Controller
                 $order_detail->product_id = $product->id;
                 $order_detail->product_details = $product;
                 $order_detail->variation = $cartItem['variation'];
+                if(isset($cartItem['variation']) && $cartItem['variation'] != null){
+                    $order_detail->varaint = (ProductStock::where('id',$cartItem['variation'])->first()->variant != null ) ? ProductStock::where('id',$cartItem['variation'])->first()->variant : '';
+                }
                 $order_detail->price = $cartItem['price'] * $cartItem['quantity'];
                 $order_detail->quantity = $cartItem['quantity'];
                 $order_detail->discount = $cartItem['discount'] * $cartItem['quantity'];
@@ -200,6 +204,9 @@ class OrderController extends Controller
                     $order_detail->product_id = $product->id;
                     $order_detail->product_details = $product;
                     $order_detail->variation = $cartItem['variation'];
+                    if(isset($cartItem['variation']) && $cartItem['variation'] != null){
+                        $order_detail->varaint = (ProductStock::where('id',$cartItem['variation'])->first()->variant != null ) ? ProductStock::where('id',$cartItem['variation'])->first()->variant : '';
+                    }
                     $order_detail->price = $cartItem['price'] * $cartItem['quantity'];
                     $order_detail->quantity = $cartItem['quantity'];
                     $order_detail->discount = $cartItem['discount'] * $cartItem['quantity'];
