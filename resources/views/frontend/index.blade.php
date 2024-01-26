@@ -19,6 +19,34 @@
             padding-right: 20px;
         }
     }
+
+    .strikethrough {
+        text-decoration: line-through;
+    }
+
+    .marquee-container {
+        width: 100%;
+        overflow: hidden;
+    }
+
+    .marquee {
+        display: inline-block;
+        /* Display content in a single line */
+        white-space: nowrap;
+        /* Prevent line breaks */
+        animation: marquee 30s linear infinite;
+        animation-delay: -15s;
+    }
+
+    @keyframes marquee {
+        0% {
+            transform: translateX(100%);
+        }
+
+        100% {
+            transform: translateX(-100%);
+        }
+    }
 </style>
 @section('content')
 <!-- Hero Slider Starts -->
@@ -50,6 +78,34 @@
         <iframe width="560" height="315" src="{{asset('videos/OpeningVideo.mp4')}}" controls autoplay muted title="YouTube video player" frameborder="0" allowfullscreen></iframe>
     </div>
 </div>
+
+@if ($latest_products->count() > 0)
+<div class="marquee-container">
+    <div class="marquee" id="marquee">
+        @foreach ($latest_products as $item)
+        <div style="display: inline-block;
+    margin-right: 20px;
+    background: wheat;
+    border-radius: 10%;
+    text-align: center;
+    padding: 10px;
+">
+            <h4 style="color:black">
+                {{$item->title}}
+                <div class="price">
+                    @if ($item->discount > 0)
+                    <span class="old-price strikethrough" style="color:red">{{ Helper::currency_converter($item->unit_price) }}</span>
+                    <span class="new-price" style="color:green">{{ Helper::currency_converter($item->purchase_price) }}</span>
+                    @else
+                    <span class="equal-price" style="color:green">{{ Helper::currency_converter($item->purchase_price) }}</span>
+                    @endif
+                </div>
+            </h4>
+        </div>
+        @endforeach
+    </div>
+</div>
+@endif
 <!-- Hero Slider Ends -->
 @if ($categories->count() > 0)
 <section class="categories-area d-md-block pt-20">
@@ -123,7 +179,6 @@
 
 @if ($promo_banners)
 <section class="products-area">
-
     <div class="container">
         <div class="row">
             <div class="col-12">
