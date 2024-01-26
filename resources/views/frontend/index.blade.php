@@ -1,27 +1,28 @@
 @extends('frontend.layouts.master')
 <style>
-    .video-container iframe{
+    .video-container iframe {
         position: relative;
         width: 100%;
         height: 60%;
-        padding-top: 50px;
+        padding-top: 10px;
         padding-bottom: 50px;
         padding-left: 100px;
         padding-right: 100px;
     }
+
     @media (max-width: 767px) {
-    .video-container iframe {
-        height: 40%;
-        padding-top: 20px;
-        padding-bottom: 20px;
-        padding-left: 20px;
-        padding-right: 20px;
+        .video-container iframe {
+            height: 40%;
+            padding-top: 20px;
+            padding-bottom: 20px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
     }
-}
 </style>
 @section('content')
 <!-- Hero Slider Starts -->
-@if (count($banners) > 0)
+<!-- @if (count($banners) > 0)
 <section class="categories-area d-md-block pt-60">
     <div class="home-slides owl-carousel owl-theme">
         @foreach ($banners as $banner)
@@ -42,8 +43,13 @@
         @endforeach
     </div>
 </section>
-@endif
+@endif -->
 
+<div class="">
+    <div class="video-container">
+        <iframe width="560" height="315" src="{{asset('videos/OpeningVideo.mp4')}}" controls autoplay muted title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+    </div>
+</div>
 <!-- Hero Slider Ends -->
 @if ($categories->count() > 0)
 <section class="categories-area d-md-block pt-20">
@@ -89,11 +95,11 @@
     </div>
 </section>
 @endif
-    <div class="">
+<!-- <div class="">
         <div class="video-container">
         <iframe width="560" height="315" src="{{asset('videos/OpeningVideo.mp4')}}" controls autoplay muted title="YouTube video player" frameborder="0" allowfullscreen></iframe>
         </div>
-    </div>
+    </div> -->
 @if ($featured_category)
 <!-- Occasion Dresses -->
 <section class="products-area pt-20">
