@@ -26,7 +26,8 @@ class APIController extends Controller
 {
 
     public function appVersionCheck(Request $request){
-        return response()->json(['status'=>200,'message' => 'App Version Check','latest_version' => config('custom.custom.app_version')], 200);
+        $appVersion=config('custom.custom.app_version');
+        return response()->json(['status'=>200,'message' => 'App Version Check','android'=>$appVersion,'ios'=>$appVersion, 'latest_version' => $appVersion], 200);
     }
     private function checkAuthentication(Request $request)
     {
