@@ -1,6 +1,7 @@
 <?php
 return [
     'custom' => [
+        'app_version' => 0.01,
         'order_prefix' => "MWNSK-",
         'shipping_charges' => 20.00,
         'whatsapp_key' => 'NQH4SEQGAOMACHIWALACOINGWRA7JCF4',

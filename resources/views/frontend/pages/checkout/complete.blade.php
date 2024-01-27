@@ -133,12 +133,13 @@
                                                                             @php
                                                                                 $Ptitle = $orderDetail->product['title'];
                                                                                 $variation = $orderDetail['variation'];
+                                                                                $variant = $orderDetail['variant'];
                                                                                 $disc += $orderDetail['discount'];
                                                                             @endphp
                                                                             <a
                                                                                 href="{{ route('product.detail', $orderDetail->product['slug']) }}">{{ ucfirst($Ptitle) }}</a>
                                                                         </td>
-                                                                        <td>{{\App\Models\ProductStock::where('id',$variation)->first()->variant}}</td>
+                                                                        <td>{{$variant}}</td>
                                                                         <td class="product-quantity">
                                                                             {{ $orderDetail->quantity }}</td>
                                                                         <td class="product-price">

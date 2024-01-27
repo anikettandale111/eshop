@@ -24,6 +24,10 @@ use Exception;
 
 class APIController extends Controller
 {
+
+    private function appVersionCheck(Request $request){
+        return response()->json(['status'=>200,'message' => 'App Version Check','latest_version' => config('custom.custom.app_version')], 200);
+    }
     private function checkAuthentication(Request $request)
     {
         if ($request->user()) {

@@ -194,7 +194,6 @@ class OrderController extends Controller
         }else{
             if ($order->save()) {
                 $subtotal = 0;
-    
                 //Order detail storing
                 foreach (session()->get('cart') as $key => $cartItem) {
                     $product = Product::find($cartItem['id']);

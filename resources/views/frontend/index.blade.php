@@ -85,10 +85,11 @@
         @foreach ($latest_products as $item)
         <div style="display: inline-block;
     margin-right: 20px;
-    background: wheat;
-    border-radius: 10%;
+    background: white;
+    border-radius: 5%;
     text-align: center;
     padding: 10px;
+    border: solid 1px black;
 ">
             <h4 style="color:black">
                 {{$item->title}}
