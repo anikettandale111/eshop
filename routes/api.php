@@ -21,7 +21,7 @@ Route::post('/register', [\App\Http\Controllers\Api\APIController::class, 'regis
 Route::post('/verifyotp', [\App\Http\Controllers\Api\APIController::class, 'verifyOTP']);
 Route::post('/resendotp', [\App\Http\Controllers\Api\APIController::class, 'resendOTP']);
 Route::post('/login', [\App\Http\Controllers\Api\APIController::class, 'login']);
-Route::post('/app-version-check', [\App\Http\Controllers\Api\APIController::class, 'appVersionCheck']);
+Route::get('/app-version-check', [\App\Http\Controllers\Api\APIController::class, 'appVersionCheck']);
 // Route::group(['middleware' => ['api']], function () {
 // });
 
