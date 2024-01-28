@@ -87,7 +87,7 @@
                                                                 <a href="{{route('product.detail',$item->product->slug)}}" target="_blank">{{ucfirst($item->product->title)}}</a>
                                                             </td>
                                                             <td>
-                                                                {{$variant}}
+                                                                {{$item['variant']}}
                                                             </td>
                                                             <td>
                                                                 <img src="{{asset($item->product->thumbnail_image)}}" width="100" alt="">
