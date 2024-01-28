@@ -78,14 +78,16 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
+                                                        @php $disc = 0; @endphp
                                                         @foreach($order->orderDetails as $item)
+                                                        @php $disc += $orderDetail['discount']; @endphp
                                                         <tr>
                                                             <td>{{$loop->iteration}}</td>
                                                             <td>
                                                                 <a href="{{route('product.detail',$item->product->slug)}}" target="_blank">{{ucfirst($item->product->title)}}</a>
                                                             </td>
                                                             <td>
-                                                                {{$item['variation']}}
+                                                                {{$variant}}
                                                             </td>
                                                             <td>
                                                                 <img src="{{asset($item->product->thumbnail_image)}}" width="100" alt="">
@@ -115,7 +117,7 @@
                                             <strong>Sub Total :</strong>
                                         </div>
                                         <div class="col-8">
-                                            {{Helper::currency_converter($order->subtotal)}}
+                                            {{ Helper::currency_converter($order->coupon + $disc) }}
                                         </div>
                                     </div>
                                     <div class="row mt-3">
@@ -130,10 +132,10 @@
                                     <div class="row mt-3">
 
                                         <div class="col-4">
-                                            <strong>Coupon Discount :</strong>
+                                            <strong>Discount :</strong>
                                         </div>
                                         <div class="col-8">
-                                            {{Helper::currency_converter($order->coupon)}}
+                                            {{Helper::currency_converter($order->total_amount-$order->delivery_charge)}}
                                         </div>
                                     </div>
                                     <div class="row mt-3">
@@ -142,7 +144,7 @@
                                             <strong>Total Amount :</strong>
                                         </div>
                                         <div class="col-8">
-                                            {{Helper::currency_converter($order->total_amount)}}
+                                        {{ Helper::currency_converter($order->total_amount-$disc) }}
                                         </div>
                                     </div>
                                     <div class="row mt-4">
