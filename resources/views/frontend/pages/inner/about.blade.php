@@ -55,11 +55,11 @@
                             <!-- About Us Top Image -->
 
                             @if ($aboutUs != null)
-                                <div class="about-img" style="text-align: center;">
+                                <div class="about-img" style="text-align: center !important;">
                                     <img src="{{ asset($aboutUs->image1_path) }}" alt="About Machiwala" style="width: 200px;">
                                 </div>
                                 <!-- About US Description -->
-                                <div class="desc-content mt-3 mb-5">
+                                <div class="desc-content mt-3 mb-5" style="font-size:20px;">
                                     {!! html_entity_decode($aboutUs->description1) !!}
                                 </div>
 
