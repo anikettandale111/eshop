@@ -6,7 +6,7 @@
     <!-- Login Area -->
     <section class="login-area">
         <div class="container">
-            <div class="form-content">
+            <div class="form-content" style="margin-top: 100px;">
                 <div class="form-title d-flex">
                     <a href="javascript:;">
                         <h2 class="mr-2 {{(session()->has('form_type') && session()->get('form_type') == 'register') ? 'text-muted':'font-weight-bold' }} " id="login-form-link">Sign In</h2>

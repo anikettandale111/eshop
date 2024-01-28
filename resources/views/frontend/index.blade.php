@@ -208,29 +208,6 @@
 </section>
 @endif
 
-@if (count($banners) > 0)
-<section class="categories-area d-md-block p-60">
-    <div class="home-slides owl-carousel owl-theme">
-        @foreach ($banners as $banner)
-        <a href="">
-            <div class="main-banner" style="background-image:url({{ asset($banner->image) }})">
-                <div class="d-table">
-                    <div class="d-table-cell">
-                        <div class="container">
-                            <div class="main-banner-content">
-                                {!! html_entity_decode($banner->content) !!}
-                                <div id="heroNav" class="hero-owl-nav"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </a>
-        @endforeach
-    </div>
-</section>
-@endif
-
 @endsection
 
 @push('styles')
