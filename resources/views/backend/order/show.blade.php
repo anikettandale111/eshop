@@ -144,7 +144,7 @@
                                             <strong>Total Amount :</strong>
                                         </div>
                                         <div class="col-8">
-                                        {{ Helper::currency_converter($order->total_amount-$disc) }}
+                                            {{ Helper::currency_converter($order->total_amount-$disc) }}
                                         </div>
                                     </div>
                                     <div class="row mt-4">
