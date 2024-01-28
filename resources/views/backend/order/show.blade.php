@@ -128,7 +128,6 @@
                                             {{Helper::currency_converter($order->delivery_charge)}}
                                         </div>
                                     </div>
-
                                     <div class="row mt-3">
 
                                         <div class="col-4">

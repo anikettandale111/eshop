@@ -181,7 +181,7 @@ class OrderController extends Controller
                 $order_detail->product_details = $product;
                 $order_detail->variation = $cartItem['variation'];
                 if(isset($cartItem['variation']) && $cartItem['variation'] != null){
-                    $order_detail->varaint = (ProductStock::where('id',$cartItem['variation'])->first()->variant != null ) ? ProductStock::where('id',$cartItem['variation'])->first()->variant : '';
+                    $order_detail->variant = (ProductStock::where('id',$cartItem['variation'])->first()->variant != null ) ? ProductStock::where('id',$cartItem['variation'])->first()->variant : '';
                 }
                 $order_detail->price = $cartItem['price'] * $cartItem['quantity'];
                 $order_detail->quantity = $cartItem['quantity'];
@@ -204,7 +204,7 @@ class OrderController extends Controller
                     $order_detail->product_details = $product;
                     $order_detail->variation = $cartItem['variation'];
                     if(isset($cartItem['variation']) && $cartItem['variation'] != null){
-                        $order_detail->varaint = (ProductStock::where('id',$cartItem['variation'])->first()->variant != null ) ? ProductStock::where('id',$cartItem['variation'])->first()->variant : '';
+                        $order_detail->variant = (ProductStock::where('id',$cartItem['variation'])->first()->variant != null ) ? ProductStock::where('id',$cartItem['variation'])->first()->variant : '';
                     }
                     $order_detail->price = $cartItem['price'] * $cartItem['quantity'];
                     $order_detail->quantity = $cartItem['quantity'];
