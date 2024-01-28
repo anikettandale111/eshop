@@ -27,6 +27,7 @@
     .marquee-container {
         width: 100%;
         overflow: hidden;
+        margin-top: 50px;
     }
 
     .marquee {
@@ -50,7 +51,7 @@
 </style>
 @section('content')
 <!-- Hero Slider Starts -->
-<!-- @if (count($banners) > 0)
+@if (count($banners) > 0)
 <section class="categories-area d-md-block pt-60">
     <div class="home-slides owl-carousel owl-theme">
         @foreach ($banners as $banner)
@@ -71,13 +72,9 @@
         @endforeach
     </div>
 </section>
-@endif -->
+@endif
 
-<div class="">
-    <div class="video-container">
-        <iframe width="560" height="315" src="{{asset('videos/OpeningVideo.mp4')}}" controls autoplay muted title="YouTube video player" frameborder="0" allowfullscreen></iframe>
-    </div>
-</div>
+
 
 @if ($latest_products->count() > 0)
 <div class="marquee-container">
@@ -152,6 +149,7 @@
     </div>
 </section>
 @endif
+
 <!-- <div class="">
         <div class="video-container">
         <iframe width="560" height="315" src="{{asset('videos/OpeningVideo.mp4')}}" controls autoplay muted title="YouTube video player" frameborder="0" allowfullscreen></iframe>
@@ -210,7 +208,28 @@
 </section>
 @endif
 
-
+@if (count($banners) > 0)
+<section class="categories-area d-md-block p-60">
+    <div class="home-slides owl-carousel owl-theme">
+        @foreach ($banners as $banner)
+        <a href="">
+            <div class="main-banner" style="background-image:url({{ asset($banner->image) }})">
+                <div class="d-table">
+                    <div class="d-table-cell">
+                        <div class="container">
+                            <div class="main-banner-content">
+                                {!! html_entity_decode($banner->content) !!}
+                                <div id="heroNav" class="hero-owl-nav"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </a>
+        @endforeach
+    </div>
+</section>
+@endif
 
 @endsection
 
