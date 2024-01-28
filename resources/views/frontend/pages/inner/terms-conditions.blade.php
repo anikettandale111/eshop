@@ -20,7 +20,7 @@
                         aria-orientation="vertical">
                         <h6 class="nav-link font-weight-bold">Terms & Conditions</h6>
                         <a class="nav-link" id="about-us-tab" data-toggle="pill" href="#about-us-content" role="tab"
-                            aria-controls="about-us-content" aria-selected="true">About BigDay</a>
+                            aria-controls="about-us-content" aria-selected="true">About Machiwala</a>
 
                         <a class="nav-link " id="return-policy-tab" data-toggle="pill" href="#return-policy-content"
                             role="tab" aria-controls="return-policy-content" aria-selected="false">Return Policy</a>
@@ -53,7 +53,7 @@
 
                             @if ($aboutUs != null)
                                 <div class="about-img">
-                                    <img src="{{ asset($aboutUs->image1_path) }}" alt="About BigDay">
+                                    <img src="{{ asset($aboutUs->image1_path) }}" alt="About Machiwala">
                                 </div>
                                 <!-- About US Description -->
                                 <div class="desc-content mt-3 mb-5">
@@ -77,7 +77,7 @@
 
 
                                 <div class="about-img my-4">
-                                    <img src="{{ asset($aboutUs->image2_path) }}" alt="About BigDay">
+                                    <img src="{{ asset($aboutUs->image2_path) }}" alt="About Machiwala">
                                 </div>
 
                                 <div class="desc-content mb-5">

@@ -22,7 +22,7 @@
                         aria-orientation="vertical">
                         <h6 class="nav-link font-weight-bold">Return Policy</h6>
                         <a class="nav-link" id="about-us-tab" data-toggle="pill" href="#about-us-content" role="tab"
-                            aria-controls="about-us-content" aria-selected="true">About BigDay</a>
+                            aria-controls="about-us-content" aria-selected="true">About Machiwala</a>
 
                         <a class="nav-link active" id="return-policy-tab" data-toggle="pill" href="#return-policy-content"
                             role="tab" aria-controls="return-policy-content" aria-selected="false">Return Policy</a>
@@ -50,13 +50,13 @@
                 <div class="col-md-8 col-lg-9">
                     <div class="tab-content sidebar-tab-content" id="v-pills-tabContent">
                         <div class="tab-pane fade " id="about-us-content" role="tabpanel" aria-labelledby="about-us-tab">
-                            <h1 class="title">About BigDay</h1>
+                            <h1 class="title">About Machiwala</h1>
                             @php($aboutUs = json_decode(\App\Models\Setting::value('about_us')))
                             <!-- About Us Top Image -->
 
                             @if ($aboutUs != null)
                                 <div class="about-img">
-                                    <img src="{{ asset($aboutUs->image1_path) }}" alt="About BigDay">
+                                    <img src="{{ asset($aboutUs->image1_path) }}" alt="About Machiwala">
                                 </div>
                                 <!-- About US Description -->
                                 <div class="desc-content mt-3 mb-5">
@@ -80,7 +80,7 @@
 
 
                                 <div class="about-img my-4">
-                                    <img src="{{ asset($aboutUs->image2_path) }}" alt="About BigDay">
+                                    <img src="{{ asset($aboutUs->image2_path) }}" alt="About Machiwala">
                                 </div>
 
                                 <div class="desc-content mb-5">

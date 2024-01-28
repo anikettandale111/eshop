@@ -55,8 +55,8 @@
                             <!-- About Us Top Image -->
 
                             @if ($aboutUs != null)
-                                <div class="about-img">
-                                    <img src="{{ asset($aboutUs->image1_path) }}" alt="About BigDay">
+                                <div class="about-img" style="text-align: center;">
+                                    <img src="{{ asset($aboutUs->image1_path) }}" alt="About Machiwala" style="width: 200px;">
                                 </div>
                                 <!-- About US Description -->
                                 <div class="desc-content mt-3 mb-5">
@@ -79,8 +79,8 @@
                                 @endif
 
 
-                                <div class="about-img my-4">
-                                    <img src="{{ asset($aboutUs->image2_path) }}" alt="About BigDay">
+                                <div class="about-img my-4" style="text-align: center;">
+                                    <img src="{{ asset($aboutUs->image2_path) }}" alt="About Machiwala">
                                 </div>
 
                                 <div class="desc-content mb-5">

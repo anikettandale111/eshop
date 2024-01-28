@@ -1,5 +1,5 @@
 @extends('frontend.layouts.master')
-@section('title', 'Place Order || Bigday')
+@section('title', 'Place Order || Machiwala')
 
 @section('content')
 

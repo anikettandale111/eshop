@@ -1,5 +1,5 @@
 @extends('frontend.layouts.master')
-@section('title','Order Status || Bigday')
+@section('title','Order Status || Machiwala')
 @section('content')
     <main class="main-content">
         <!-- Login Area -->
