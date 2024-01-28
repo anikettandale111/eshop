@@ -80,14 +80,14 @@
 <div class="marquee-container">
     <div class="marquee" id="marquee">
         @foreach ($latest_products as $item)
-        <div style="display: inline-block;
+        <a href="{{ route('product.detail', $item->slug) }}"><div style="display: inline-block;
     margin-right: 20px;
     background: white;
     border-radius: 5%;
     text-align: center;
     padding: 10px;
     border: solid 1px black;
-">
+"> 
             <h4 style="color:black">
                 {{$item->title}}
                 <div class="price">
@@ -99,7 +99,7 @@
                     @endif
                 </div>
             </h4>
-        </div>
+        </div></a>
         @endforeach
     </div>
 </div>

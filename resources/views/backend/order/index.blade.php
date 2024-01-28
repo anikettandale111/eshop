@@ -81,7 +81,7 @@
 
                                                     <td>
                                                         <div class="g-2 d-flex">
-                                                            <a href="{{route('invoice.download',$item->id)}}" class="btn text-info btn-sm" data-bs-toggle="tooltip" data-bs-original-title="download"><span class="fe fe-download fs-14"></span></a>
+                                                            <!-- <a href="{{route('invoice.download',$item->id)}}" class="btn text-info btn-sm" data-bs-toggle="tooltip" data-bs-original-title="download"><span class="fe fe-download fs-14"></span></a> -->
 
                                                             <a href="{{route('orders.show',$item->id)}}" class="btn text-primary btn-sm" data-bs-toggle="tooltip" data-bs-original-title="detail"><span class="fe fe-eye fs-14"></span></a>
                                                             <form action="{{route('orders.destroy',$item->id)}}" method="post">
