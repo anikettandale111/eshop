@@ -194,7 +194,7 @@
                                                                 <span class="key">SUBTOTAL ({{ $order->quantity }}
                                                                     ITEM): </span>
                                                                 <span
-                                                                    class="value">{{ Helper::currency_converter($order->subtotal) }}</span>
+                                                                    class="value">{{ Helper::currency_converter($order->subtotal + $disc ) }}</span>
                                                             </li>
 
                                                             <li class="charges ">

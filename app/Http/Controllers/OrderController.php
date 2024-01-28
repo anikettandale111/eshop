@@ -122,7 +122,7 @@ class OrderController extends Controller
         $order['user_id'] = auth()->user()->id;
         
         //serial order number
-        if(session()->has('order_number') && session()->get('order_number') != NULL){
+        if(session()->has('order_number') && session()->get('order_number') != NULL && session()->has('order_id') && session()->get('order_id') != NULL){
             $generateOrder_nr = session()->get('order_number');
         }else{
             $orderObj = DB::table('orders')->select('order_number')->latest('id')->first();
@@ -141,6 +141,7 @@ class OrderController extends Controller
             $carttotal += $c['quantity'] * $c['price'];
             $disc += \Helper::get_product_discount($product, $c['price']) * $c['quantity'];
         }
+
         $order['order_number'] = $generateOrder_nr;
         $shipping_cost = config('custom.custom.shipping_charges');
         $order['coupon'] = $coupon_discount;
@@ -161,7 +162,7 @@ class OrderController extends Controller
         $order->address2 = $request->address2;
         $order->state = $request->state;
         $order->postcode = $request->postcode;
-
+        
         $order->scountry = $ship_to_diff_adr == '1' ? $request->scountry : $request->country;
         $order->saddress = $ship_to_diff_adr == '1' ? $request->saddress : $request->address;
         $order->saddress2 = $ship_to_diff_adr == '1' ? $request->saddress2 : $request->address2;

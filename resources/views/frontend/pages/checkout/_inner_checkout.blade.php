@@ -183,12 +183,14 @@
                     <div class="col-sm-12">
                         <ul class="total-summary-list">
                             @php
+                            $discount=0;
                             $subtotal=0;
                             $shipping_cost=config('custom.custom.shipping_charges');
                             $coupon_discount=0
                             @endphp
                             @if(session()->has('cart') && count( session()->get('cart')) > 0)
                             @foreach(session('cart') as $key => $cartItem)
+                            @php($discount += $cartItem['quantity'] * $cartItem['discount'])
                             @php($subtotal+=$cartItem['price']*$cartItem['quantity'])
                             @php($shipping_cost+=$cartItem['shipping_cost'])
                             @endforeach
@@ -200,17 +202,17 @@
                                 <span class="key">SUBTOTAL ({{session()->has('cart') ?count(session('cart')) : 0}} ITEMS): </span>
                                 <span class="value">{{Helper::currency_converter($subtotal)}}</span>
                             </li>
-                            <!-- <li class="charges ">
-                                <span class="key">Coupon Discount:</span>
-                                <span class="value">{{Helper::currency_converter($coupon_discount)}}</span>
-                            </li> -->
+                            <li class="charges ">
+                                <span class="key">Discount:</span>
+                                <span class="value">{{Helper::currency_converter($discount)}}</span>
+                            </li>
                             <li class="charges ">
                                 <span class="key">Shipping Cost:</span>
                                 <span class="value">{{Helper::currency_converter($shipping_cost)}}</span>
                             </li>
                             <li class="grand-total">
                                 <span class="key">GRAND TOTAL:</span>
-                                <span class="value">{{Helper::currency_converter($subtotal+$shipping_cost-$coupon_discount)}}</span>
+                                <span class="value">{{Helper::currency_converter($subtotal+$shipping_cost-$discount)}}</span>
                             </li>
                         </ul>
                     </div>

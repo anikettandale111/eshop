@@ -123,6 +123,8 @@ Route::get('/paypal/payment/cancel', [\App\Http\Controllers\PaypalController::cl
 //Place Order
 Route::get('order-confirmed', function () {
     $order = \App\Models\Order::findOrFail(session()->get('order_id'));
+    session()->forget('order_id');
+    session()->forget('order_number');
     return view('frontend.pages.checkout.complete', compact('order'));
 })->name('order.complete');
 

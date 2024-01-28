@@ -117,7 +117,7 @@
                                             <strong>Sub Total :</strong>
                                         </div>
                                         <div class="col-8">
-                                            {{ Helper::currency_converter($order->coupon + $disc) }}
+                                            {{ Helper::currency_converter($order->subtotal) }}
                                         </div>
                                     </div>
                                     <div class="row mt-3">
@@ -134,7 +134,7 @@
                                             <strong>Discount :</strong>
                                         </div>
                                         <div class="col-8">
-                                            {{Helper::currency_converter($order->total_amount-$order->delivery_charge)}}
+                                            {{Helper::currency_converter($order->total_amount-$order->subtotal-$order->delivery_charge)}}
                                         </div>
                                     </div>
                                     <div class="row mt-3">

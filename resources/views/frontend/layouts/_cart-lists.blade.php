@@ -126,11 +126,13 @@
             </div>
             <div class="col-lg-5 col-md-5 col-12 offset-lg-3 text-right">
                 <div class="cart-totals">
+                    @php $discount = 0; @endphp
                     @php($subtotal = 0)
                     @php($shipping_cost = 0)
                     @php($coupon_discount = 0)
                     @if (session()->has('cart') && count(session()->get('cart')) > 0)
                     @foreach (session('cart') as $key => $cartItem)
+                    @php($discount += $cartItem['quantity'] * $cartItem['discount']) 
                     @php($subtotal += $cartItem['price'] * $cartItem['quantity'])
                     @php($shipping_cost += $cartItem['shipping_cost'])
                     @endforeach
@@ -142,9 +144,12 @@
                         <li>
                             <span>Subtotal</span> <span>{{ Helper::currency_converter($subtotal) }} </span></b>
                         </li>
-                        {{-- <li> --}}
-                        {{-- <span>Shipping</span> <span>{{Helper::currency_converter($shipping_cost)}}</span></b> --}}
-                        {{-- </li> --}}
+                        <li>
+                        <span>Discount</span> <span>{{Helper::currency_converter($discount)}}</span></b>
+                        </li>
+                        <li>
+                        <span>Shipping</span> <span>{{Helper::currency_converter(config('custom.custom.shipping_charges'))}}</span></b>
+                        </li>
 
                         @if (session()->has('coupon_discount'))
                         <li>
@@ -155,7 +160,7 @@
 
                         <li class="total">
                             <span>Total</span>
-                            <span>{{ Helper::currency_converter($subtotal + $shipping_cost - $coupon_discount) }}</span></b>
+                            <span>{{ Helper::currency_converter($subtotal + $shipping_cost - $discount) }}</span></b>
                         </li>
                     </ul>
                 </div>

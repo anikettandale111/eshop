@@ -58,33 +58,33 @@ class CartController extends Controller
         if ($str) {
             $product_stock = $product->stocks->where('id', $str)->first();
             $var_pkg = $product_stock->variant;
-            if(isset($product->discount) && $product->discount != ''){
-                if(isset($product->discount_type) && $product->discount_type == 'amount'){
-                    $price += $product_stock->price - $product->discount;
-                    $quantity = $product_stock->qty;
-                }else{
-                    $discountAmount = ($product->discount / 100) * $product_stock->price;
-                    $price += $product_stock->price - $discountAmount;
-                    $quantity = $product_stock->qty;
-                }
-            }else{
+            // if(isset($product->discount) && $product->discount != ''){
+            //     if(isset($product->discount_type) && $product->discount_type == 'amount'){
+            //         $price += $product_stock->price - $product->discount;
+            //         $quantity = $product_stock->qty;
+            //     }else{
+            //         $discountAmount = ($product->discount / 100) * $product_stock->price;
+            //         $price += $product_stock->price - $discountAmount;
+            //         $quantity = $product_stock->qty;
+            //     }
+            // }else{
                 $price += $product_stock->price;
                 $quantity = $product->stock;
-            }
+            // }
         } else {
-            if(isset($product->discount) && $product->discount != ''){
-                if(isset($product->discount_type) && $product->discount_type == 'amount'){
-                    $price += $product->price - $product->discount;
-                    $quantity = $product->qty;
-                }else{
-                    $discountAmount = ($product->discount / 100) * $product->price;
-                    $price += $product->price - $discountAmount;
-                    $quantity = $product->qty;
-                }
-            }else{
+            // if(isset($product->discount) && $product->discount != ''){
+            //     if(isset($product->discount_type) && $product->discount_type == 'amount'){
+            //         $price += $product->price - $product->discount;
+            //         $quantity = $product->qty;
+            //     }else{
+            //         $discountAmount = ($product->discount / 100) * $product->price;
+            //         $price += $product->price - $discountAmount;
+            //         $quantity = $product->qty;
+            //     }
+            // }else{
                 $price += $product->purchase_price;
                 $quantity = $product->stock;
-            }
+            // }
         }
 
         if ($request->session()->has('cart')) {
@@ -241,33 +241,33 @@ class CartController extends Controller
 
         if ($request->variant) {
             $product_stock = $product->stocks->where('id', $request->variant)->first();
-            if(isset($product->discount) && $product->discount != ''){
-                if(isset($product->discount_type) && $product->discount_type == 'amount'){
-                    $price += $product_stock->price - $product->discount;
-                    $quantity = $product_stock->qty;
-                }else{
-                    $discountAmount = ($product->discount / 100) * $product_stock->price;
-                    $price += $product_stock->price - $discountAmount;
-                    $quantity = $product_stock->qty;
-                }
-            }else{
+            // if(isset($product->discount) && $product->discount != ''){
+            //     if(isset($product->discount_type) && $product->discount_type == 'amount'){
+            //         $price += $product_stock->price - $product->discount;
+            //         $quantity = $product_stock->qty;
+            //     }else{
+            //         $discountAmount = ($product->discount / 100) * $product_stock->price;
+            //         $price += $product_stock->price - $discountAmount;
+            //         $quantity = $product_stock->qty;
+            //     }
+            // }else{
                 $price += $product_stock->price;
                 $quantity = $product->stock;
-            }
+            // }
         } else {
-            if(isset($product->discount) && $product->discount != ''){
-                if(isset($product->discount_type) && $product->discount_type == 'amount'){
-                    $price += $product->price - $product->discount;
-                    $quantity = $product->qty;
-                }else{
-                    $discountAmount = ($product->discount / 100) * $product->price;
-                    $price += $product->price - $discountAmount;
-                    $quantity = $product->qty;
-                }
-            }else{
+            // if(isset($product->discount) && $product->discount != ''){
+            //     if(isset($product->discount_type) && $product->discount_type == 'amount'){
+            //         $price += $product->price - $product->discount;
+            //         $quantity = $product->qty;
+            //     }else{
+            //         $discountAmount = ($product->discount / 100) * $product->price;
+            //         $price += $product->price - $discountAmount;
+            //         $quantity = $product->qty;
+            //     }
+            // }else{
                 $price += $product->purchase_price;
                 $quantity = $product->stock;
-            }
+            // }
         }
 
         return array('price' => \Helper::currency_converter($price * $request->quantity), 'quantity' => $quantity);
