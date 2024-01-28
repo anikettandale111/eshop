@@ -6,7 +6,7 @@
                 <!-- Search Form For Mobile Menu-->
                 <div class="search-container">
                     <form action="{{route('search.products')}}" method="GET">
-                        <input type="text" name="q" id="search-terms" autocomplete="off" placeholder="Search dresses..." />
+                        <input type="text" name="q" id="search-terms" autocomplete="off" placeholder="Search food..." />
                     </form>
                 </div>
                 <div class="col-3 col-md-3 d-flex align-items-center justify-content-between">
@@ -34,11 +34,11 @@
                     </div>
                 </div>
                 <div class="col-3 col-md-3 d-flex align-items-center justify-content-between">
-                    <a href="tel:{{get_settings('phone')}}" class="contact-link">
+                    <!-- <a href="tel:{{get_settings('phone')}}" class="contact-link">
                         <i class='bx bx-phone-call'></i>
-                    </a>
+                    </a> -->
                     <a href="{{route('cart')}}" class="cart-link">
-                        <img src="{{asset('frontend/assets/images/icons/shoppingBag.svg')}}" alt="Shopping Bag Icon" class="img-icon">
+                        <i class='bx bxs-cart-alt bx-tada' style="font-size:35px"></i>
                         <span class="count-badge">{{session()->has('cart') ? count(session()->get('cart')) : 0}}</span>
                     </a>
                 </div>

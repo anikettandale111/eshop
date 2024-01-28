@@ -39,21 +39,21 @@
         <ul class="header-top-menu">
           <li>
             <div class="content-wrapper d-inline-block">
-              <i class='bx bx-phone-call'></i>
+              <i class='bx bx-phone-call bx-tada'></i>
               <span class="text-uppercase mr-1">Phone:</span>
               <a href="tel:{{get_settings('phone')}}">
                 {{get_settings('phone')}}
               </a>
             </div>
           </li>
-          <li>
+          <!-- <li>
             <i class='bx bx-time'></i>
             <span class="">{{strtoupper(get_settings('office_time'))}}</span>
-          </li>
+          </li> -->
           @auth
           <li class="">
             <a href="{{route('login')}}">
-              <img src="{{asset('frontend/assets/images/icons/login.svg')}}" alt="Login Icon" class="img-icon">
+              <i class='bx bx-user-circle bx-tada'></i>
               @php
               $name=explode(' ',auth()->user()->full_name);
               @endphp
@@ -63,16 +63,14 @@
           @else
           <li class="">
             <a href="{{route('login')}}">
-              <i class='bx bx-user'></i>
-              <!-- <img src="{{asset('frontend/assets/images/icons/login.svg')}}" alt="Login Icon" class="img-icon"> -->
+              <i class='bx bx-log-in-circle bx-tada'></i>
               <span>Login</span>
             </a>
           </li>
           @endif
           <li class="">
             <a href="{{route('cart')}}" class="cart-link">
-            <i class='bx bx-cart-alt'></i>
-              <!-- <img src="{{asset('frontend/assets/images/icons/shoppingBag.svg')}}" alt="Shopping Bag Icon" class="img-icon"> -->
+              <i class='bx bx-cart-alt bx-tada'></i>
               <span class="count-badge">{{session()->has('cart') ? count(session()->get('cart')) : 0}}</span>
             </a>
           </li>

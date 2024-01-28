@@ -21,6 +21,7 @@ Route::post('/register', [\App\Http\Controllers\Api\APIController::class, 'regis
 Route::post('/verifyotp', [\App\Http\Controllers\Api\APIController::class, 'verifyOTP']);
 Route::post('/resendotp', [\App\Http\Controllers\Api\APIController::class, 'resendOTP']);
 Route::post('/login', [\App\Http\Controllers\Api\APIController::class, 'login']);
+Route::get('/app-version-check', [\App\Http\Controllers\Api\APIController::class, 'appVersionCheck']);
 // Route::group(['middleware' => ['api']], function () {
 // });
 
@@ -35,6 +36,8 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::get('products', [\App\Http\Controllers\Api\APIController::class, 'products']);
     // Address Listing
     Route::get('address', [\App\Http\Controllers\Api\APIController::class, 'listAddress']);
+    // Order History
+    Route::get('order-history/{order_id?}', [\App\Http\Controllers\Api\APIController::class, 'orderHistory']);
     // Address add OR update 
     Route::post('addupdateadd', [\App\Http\Controllers\Api\APIController::class, 'addUpdateaddress']);
     // Product By Category
@@ -51,8 +54,12 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('cart/update', [\App\Http\Controllers\Api\APIController::class, 'cartUpdate']);
     // Add to Cart
     Route::post('cart/add', [\App\Http\Controllers\Api\APIController::class, 'cartAdd']);
+    // Cart Duplicate Check
+    Route::post('cart/duplicate', [\App\Http\Controllers\Api\APIController::class, 'checkDuplicateCart']);
     // Checkout
     Route::post('checkout', [\App\Http\Controllers\Api\APIController::class, 'checkoutStore']);
+    // Update Order Status
+    Route::post('order-status-update', [\App\Http\Controllers\Api\APIController::class, 'orderStatusUpdate']);
 });
 
 //product review

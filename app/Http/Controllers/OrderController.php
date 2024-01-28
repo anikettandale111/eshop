@@ -8,6 +8,7 @@ use App\Models\Admin;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\Product;
+use App\Models\ProductStock;
 use App\OrdersExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -121,20 +122,31 @@ class OrderController extends Controller
         $order['user_id'] = auth()->user()->id;
         
         //serial order number
-        $orderObj = DB::table('orders')->select('order_number')->latest('id')->first();
-        if ($orderObj) {
-            $orderNr = $orderObj->order_number;
-            $removed1char = substr($orderNr, 6);
-            $generateOrder_nr = $stpad = config('custom.custom.order_prefix') . str_pad($removed1char + 1, 3, "0", STR_PAD_LEFT);
-        } else {
-            $generateOrder_nr = Str::upper(config('custom.custom.order_prefix') . str_pad(1, 4, "0", STR_PAD_RIGHT));
+        if(session()->has('order_number') && session()->get('order_number') != NULL){
+            $generateOrder_nr = session()->get('order_number');
+        }else{
+            $orderObj = DB::table('orders')->select('order_number')->latest('id')->first();
+            if ($orderObj) {
+                $orderNr = $orderObj->order_number;
+                $removed1char = substr($orderNr, 6);
+                $generateOrder_nr = $stpad = config('custom.custom.order_prefix') . str_pad($removed1char + 1, 3, "0", STR_PAD_LEFT);
+            } else {
+                $generateOrder_nr = Str::upper(config('custom.custom.order_prefix') . str_pad(1, 4, "0", STR_PAD_RIGHT));
+            }
+        }
+
+        $carttotal = 0;$disc=0;
+        foreach ($cart as $key => $c) {
+            $product = Product::find($c['id']);
+            $carttotal += $c['quantity'] * $c['price'];
+            $disc += \Helper::get_product_discount($product, $c['price']) * $c['quantity'];
         }
         $order['order_number'] = $generateOrder_nr;
         $shipping_cost = config('custom.custom.shipping_charges');
         $order['coupon'] = $coupon_discount;
         $order['quantity'] = count($cart);
-        $order['subtotal'] = Order::cart_grand_total($cart);
-        $order['total_amount'] = Order::cart_grand_total($cart) - $coupon_discount + $shipping_cost;
+        $order['subtotal'] = $carttotal - $disc - $coupon_discount;
+        $order['total_amount'] = $carttotal + config('custom.custom.shipping_charges');
         $order['payment_method'] = $request->payment_method;
         $order['payment_status'] = 'unpaid';
         $order['order_status'] = 'pending';
@@ -155,33 +167,56 @@ class OrderController extends Controller
         $order->saddress2 = $ship_to_diff_adr == '1' ? $request->saddress2 : $request->address2;
         $order->sstate = $ship_to_diff_adr == '1' ? $request->sstate : $request->state;
         $order->spostcode = $ship_to_diff_adr == '1' ? $request->spostcode : $request->postcode;
-
-        if ($order->save()) {
+        $checkPrv = Order::where('order_number',$order['order_number'])->get();
+        
+        if(isset($checkPrv) && count($checkPrv) > 0 ){
             $subtotal = 0;
-
-            //Order detail storing
+            OrderDetail::where('order_id',$checkPrv[0]->id)->delete();
             foreach (session()->get('cart') as $key => $cartItem) {
                 $product = Product::find($cartItem['id']);
                 $subtotal += $cartItem['price'] * $cartItem['quantity'];
-
                 $order_detail = new OrderDetail();
-
-                $order_detail->order_id = $order->id;
+                $order_detail->order_id = $checkPrv[0]->id;
                 $order_detail->product_id = $product->id;
                 $order_detail->product_details = $product;
                 $order_detail->variation = $cartItem['variation'];
+                if(isset($cartItem['variation']) && $cartItem['variation'] != null){
+                    $order_detail->varaint = (ProductStock::where('id',$cartItem['variation'])->first()->variant != null ) ? ProductStock::where('id',$cartItem['variation'])->first()->variant : '';
+                }
                 $order_detail->price = $cartItem['price'] * $cartItem['quantity'];
                 $order_detail->quantity = $cartItem['quantity'];
                 $order_detail->discount = $cartItem['discount'] * $cartItem['quantity'];
                 $order_detail->shipping_method_id = $cartItem['shipping_method_id'];
-
                 $order_detail->save();
             }
-
-            $status = $order->save();
-
-            if ($status) {
-                $request->session()->put('order_id', $order->id);
+            $request->session()->put('order_id', $checkPrv[0]->id);
+            $request->session()->put('order_number', $checkPrv[0]->order_number);
+        }else{
+            if ($order->save()) {
+                $subtotal = 0;
+                //Order detail storing
+                foreach (session()->get('cart') as $key => $cartItem) {
+                    $product = Product::find($cartItem['id']);
+                    $subtotal += $cartItem['price'] * $cartItem['quantity'];
+                    $order_detail = new OrderDetail();
+                    $order_detail->order_id = $order->id;
+                    $order_detail->product_id = $product->id;
+                    $order_detail->product_details = $product;
+                    $order_detail->variation = $cartItem['variation'];
+                    if(isset($cartItem['variation']) && $cartItem['variation'] != null){
+                        $order_detail->varaint = (ProductStock::where('id',$cartItem['variation'])->first()->variant != null ) ? ProductStock::where('id',$cartItem['variation'])->first()->variant : '';
+                    }
+                    $order_detail->price = $cartItem['price'] * $cartItem['quantity'];
+                    $order_detail->quantity = $cartItem['quantity'];
+                    $order_detail->discount = $cartItem['discount'] * $cartItem['quantity'];
+                    $order_detail->shipping_method_id = $cartItem['shipping_method_id'];
+                    $order_detail->save();
+                }
+                $status = $order->save();
+                if ($status) {
+                    $request->session()->put('order_id', $order->id);
+                    $request->session()->put('order_number', $order['order_number']);
+                }
             }
         }
     }

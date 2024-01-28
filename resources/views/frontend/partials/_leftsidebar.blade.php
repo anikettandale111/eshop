@@ -1,123 +1,93 @@
 <div class="modal left fade mobileMenuModal show" id="mobileMenu" tabindex="-1" role="dialog" aria-modal="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <button type="button" class="close d-none" data-dismiss="modal" aria-label="Close">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="left:240px!important">
                 <span aria-hidden="true"><i class="bx bx-x"></i></span>
             </button>
             <div class="modal-body">
                 <!-- Sign In or Sign Up -->
                 <div class="mobile-menu__signin d-flex align-items-center justify-content-between">
-                    @auth
-                        <button class="btn btn-outline w-50">
-                            <a href="{{route('user.dashboard')}}"  class="text-uppercase px-2">
-                                Dashboard
+                    <span style="color: red;font-size: 15px;font-weight: bold;text-align: center !important;">
+                        @if(isset(Auth::user()->full_name) && Auth::user()->full_name != null ) {{Auth::user()->full_name}} @elseif(isset(Auth::user()->phone) && Auth::user()->phone != null ) {{Auth::user()->phone}} @else
+                        <!-- <a href='{{route("login")}}' onclick='event.preventDefault(); document.getElementById("logout-form").submit();' class="text-uppercase">Login</a> -->
+                        Welcome Dear
+                        @endif</span>
+                </div>
+                <!-- Navigation Menu -->
+                <div class="mobile-navigation-menu mt-3">
+                    <ul>
+                        <li>
+                            <a href="{{route('home')}}" class="navigation-item">
+                                <i class='bx bx-home-alt bx-tada'></i>
+                                <span> Home </span>
                             </a>
-                        </button>
-                        <button class="btn secondary-btn sign-up-btn m-auto">
-                            <a href="{{route('login')}}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="text-white text-uppercase">
-                                Logout
+                        </li>
+                        @auth
+                        <li>
+                            <a href="{{route('user.dashboard')}}" class="text-uppercase">
+                                <i class='bx bxs-dashboard bx-tada'></i><span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li><a id="account-tab" data-toggle="pill" href="#account"><i class="bx bxs-user bx-tada"></i><span>Profile</span></a></li>
+                        <li><a class="@if ($_GET != null && $_GET['active'] == 'order') active @endif" id="orders-tab" data-toggle="pill" href="#orders"><i class="bx bxs-layer"></i><span>Orders</span></a></li>
+                        <li><a id="address-tab" data-toggle="pill" href="#address"><i class="bx bx-map bx-tada"></i><span>Address</span></a></li>
+                        <li><a id="wishlist-tab" data-toggle="pill" href="#wishlist"><i class="bx bxs-heart-circle bx-spin"></i><span>Wishlist</span></a></li>
+                        @endauth
+                        @php
+                        $categories=\App\Models\Category::with('subcategories')->where(['status'=>'active','is_menu'=>1,'level'=>0,'parent_id'=>0])->limit(6)->orderBy('id','DESC')->get()
+                        @endphp
+                        @if(count($categories)>0)
+                        @foreach($categories->sortBy('order') as $key=>$cat)
+                        <li>
+                            <a href="{{route('product.category',$cat->slug)}}" class="text-uppercase" @if($cat->subcategories->count()>0)
+                                data-toggle="modal"
+                                data-target="#mobileSubMenu{{$key}}"
+                                @endif
+                                >
+                                <!-- <img src="{{asset($cat->icon_path)}}"> -->
+                                <i class='bx bxs-hand-right bx-tada'></i>
+                                <span> {{ucfirst($cat->title)}} </span>
+                                @if($cat->subcategories->count()>0)
+                                <i class='bx bx-chevron-right'></i>
+                                @endif
+                            </a>
+                        </li>
+                        @endforeach
+                        @endif
+                        @auth
+                        <li>
+                            <a href="{{route('login')}}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="text-uppercase">
+                                <i class='bx bx-log-out-circle bx-tada'></i><span>Logout</span>
                             </a>
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                 @csrf
                             </form>
-                        </button>
-                    @else
-
-                    <button class="btn btn-outline">
-                        <a href="{{route('login')}}" class="text-uppercase">
-                            Sign In
-                        </a>
-                    </button>
-                    <span>or</span>
-                    <button class="btn secondary-btn sign-up-btn">
-                        <a href="{{route('register')}}" class="text-white text-uppercase">
-                            Sign Up
-                        </a>
-                    </button>
-                    @endauth
-
-                </div>
-
-
-                <!-- Navigation Menu -->
-                <div class="mobile-navigation-menu mt-5">
-                    <ul>
+                        </li>
+                        @else
                         <li>
-                            <a href="{{route('home')}}" class="navigation-item">
-                                <img src="{{asset('frontend/assets/images/icons/home.svg')}}">
-                                <span> Home </span>
+                            <a href="{{route('login')}}" class="text-uppercase">
+                                <i class='bx bx-log-in-circle bx-tada'></i><span>Sign In</span>
                             </a>
                         </li>
-                        @php
-                            $categories=\App\Models\Category::with('subcategories')->where(['status'=>'active','is_menu'=>1,'level'=>0,'parent_id'=>0])->limit(6)->orderBy('id','DESC')->get()
-                        @endphp
-                        @if(count($categories)>0)
-                            @foreach($categories->sortBy('order') as $key=>$cat)
-                                <li>
-                                    <a href="{{route('product.category',$cat->slug)}}" class="navigation-item"
-
-                                       @if($cat->subcategories->count()>0)
-                                       data-toggle="modal"
-                                       data-target="#mobileSubMenu{{$key}}"
-                                       @endif
-                                    >
-
-                                        <img src="{{asset($cat->icon_path)}}">
-                                        <span> {{ucfirst($cat->title)}} </span>
-                                        @if($cat->subcategories->count()>0)
-                                            <i class='bx bx-chevron-right'></i>
-                                        @endif
-                                    </a>
-                                </li>
-                            @endforeach
-                        @endif
-
+                        <li>
+                            <a href="{{route('register')}}" class="text-uppercase">
+                                <i class='bx bx-log-in-circle bx-tada'></i><span>Sign Up</span>
+                            </a>
+                        </li>
+                        @endauth
                         <hr>
-
-                        <li class="accordion">
-                            <a class="accordion-item">
-                                @php
-                                    Helper::currency_load();
-                                    $currency_code = session('currency_code');
-                                    $currency_symbol= session('currency_symbol');
-                                    $currency_img= session('flag_path');
-
-                                    if ($currency_symbol=="")
-                                    {
-                                        $system_default_currency_info = session('system_default_currency_info');
-                                        $currency_symbol = $system_default_currency_info->symbol;
-                                        $currency_code = $system_default_currency_info->code;
-                                        $currency_img = $system_default_currency_info->flag_path;
-                                    }
-                                @endphp
-                                <a class="accordion-title" href="javascript:void(0)">
-                                    <img src="{{asset('frontend/assets/images/icons/USD.svg')}}">
-                                    <span>USD</span>
-                                    <i class="bx bx-chevron-down float-right"></i>
-                                </a>
-
-                                <div class="accordion-content mt-3" style="display: none;">
-                                    @foreach(\App\Models\Currency::where('status','active')->orderBy('id','ASC')->get() as $key=>$currency)
-                                        <div class="form-check {{$key==0 ? '' : 'mt-2'}}">
-                                            <input onclick="currency_change('{{$currency['code']}}')" class="form-check-input" type="radio" name="exampleRadios"
-                                                   id="exampleRadios{{$key}}" value="option2">
-                                            <label class="form-check-label" for="exampleRadios{{$key}}" style="font-size: 12px;line-height: 1.5;">
-                                                {{\Illuminate\Support\Str::upper($currency->name)}} ({{\Illuminate\Support\Str::upper($currency->code)}}) <img style="height: 1rem" src="{{$currency['flag_path']!=null ? asset($currency['flag_path']) : Helper::DefaultImage()}}">
-                                            </label>
-                                        </div>
-                                    @endforeach
-
-                                </div>
-                            </a>
+                        <li style="margin-top: 20px;">
+                            <div class="single-footer-widget footer-contact">
+                                <ul class="social-link">
+                                    <li><a href="{{get_settings('facebook_url')}}" class="d-block" target="_blank"><i class='bx bxl-facebook bx-tada'></i></a></li>
+                                    <li><a href="{{get_settings('twitter_url')}}" class="d-block" target="_blank"><i class='bx bxl-twitter bx-tada'></i></a></li>
+                                    <li><a href="{{get_settings('instagram_url')}}" class="d-block" target="_blank"><i class='bx bxl-instagram bx-tada'></i></a>
+                                    </li>
+                                    <li><a href="{{get_settings('youtube_url')}}" class="d-block" target="_blank"><i class='bx bxl-youtube bx-tada'></i></a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
-
-                        <li>
-                            <a href="javascript:void(0)" class="navigation-item" data-toggle="modal" data-target="#onlineHelpModal">
-                                <img src="{{asset('frontend/assets/images/icons/information.svg')}}">
-                                <span> Online Help </span> <i class='bx bx-chevron-right'></i>
-                            </a>
-                        </li>
-
                     </ul>
                 </div>
             </div>
@@ -125,42 +95,38 @@
     </div>
 </div>
 
-
-<!----====== Mobile Sidebar Menu Starts======-->
-
 <!----====== Mobile Sidebar Sub-Menu Starts======-->
 @if(count($categories)>0)
-    @foreach($categories as $key=>$cat)
-            @if($cat->subcategories->count()>0)
-                <div class="modal left fade mobileMenuModal mobile-submenu show" id="mobileSubMenu{{$key}}" tabindex="-1" role="dialog" aria-modal="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-body">
-                                <div class="menu-title d-flex align-items-center">
-                                    <a href="javascript:void(0)" class="close" data-dismiss="modal" aria-label="Close">
-                                        <i class='bx bx-arrow-back bx-tada'></i>
-                                    </a>
-                                    <h6><a href="{{route('product.category',$cat->slug)}}">{{ucfirst($cat->title)}}</a></h6>
-                                </div>
-                                @if($cat->subcategories->count()>0)
-                                    <ul class="sub-menu mt-4">
-                                        @foreach($cat->subcategories as $subCat)
-                                            <li>
-                                                <a href="{{route('product.category',$subCat->slug)}}">
-                                                    {{ucfirst($subCat->title)}}
-                                                </a>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
+@foreach($categories as $key=>$cat)
+@if($cat->subcategories->count()>0)
+<div class="modal left fade mobileMenuModal mobile-submenu show" id="mobileSubMenu{{$key}}" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="menu-title d-flex align-items-center">
+                    <a href="javascript:void(0)" class="close" data-dismiss="modal" aria-label="Close">
+                        <i class='bx bx-arrow-back bx-tada'></i>
+                    </a>
+                    <h6><a href="{{route('product.category',$cat->slug)}}">{{ucfirst($cat->title)}}</a></h6>
                 </div>
-            @endif
-    @endforeach
+                @if($cat->subcategories->count()>0)
+                <ul class="sub-menu mt-4">
+                    @foreach($cat->subcategories as $subCat)
+                    <li>
+                        <a href="{{route('product.category',$subCat->slug)}}">
+                            {{ucfirst($subCat->title)}}
+                        </a>
+                    </li>
+                    @endforeach
+                </ul>
+                @endif
+            </div>
+        </div>
+    </div>
+</div>
 @endif
-
+@endforeach
+@endif
 
 <!----====== Mobile Sidebar Online Help Submenu Starts======-->
 <div class="modal left fade mobileMenuModal online-help show" id="onlineHelpModal" tabindex="-1" role="dialog" aria-modal="true">
@@ -198,11 +164,8 @@
                             Order Status
                         </a>
                     </li>
-
-
                 </ul>
             </div>
         </div>
     </div>
 </div>
-

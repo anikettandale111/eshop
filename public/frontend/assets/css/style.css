@@ -68,7 +68,6 @@ p:last-child {
     padding-top: 70px;
     padding-bottom: 70px
 }
-
 .pt-70 {
     padding-top: 70px
 }
@@ -1020,6 +1019,9 @@ textarea.form-control {
 }
 
 @media only screen and (max-width:991px) {
+    .pt-60 {
+        padding-top: 60px
+    }
     .responsive-nav {
         display: block
     }
@@ -1202,8 +1204,8 @@ textarea.form-control {
     }
     .navbar-area {
         border-top: 1px solid #EEEEEE;
-        padding-top: 15px;
-        padding-bottom: 15px
+        padding-top: 5px;
+        padding-bottom: 5px
     }
     .navbar-area.header-sticky {
         display: none
@@ -7109,6 +7111,9 @@ fieldset .form-group input, fieldset .form-group .nice-select {
 }
 
 @media screen and (max-width: 768px) {
+    .pt-60 {
+        padding-top: 60px
+    }
     .account-info-cards ul {
         grid-template-columns: repeat(1, 1fr);
     }

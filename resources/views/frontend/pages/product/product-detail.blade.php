@@ -237,7 +237,7 @@
                             @endif
                             @endif
                             
-                            <div class="row products-details-title total-price d-none d-md-flex justify-content-between mt-4" id="chosen_price_div">
+                            <div class="row products-details-title total-price d-none d-md-flex justify-content-between mt-4 pl-4" id="chosen_price_div"> 
                                 <div class="col-12 d-flex align-items-center">
                                     <span class="pr-2">Price:</span>
                                     <div class="product-price for-total-price">
@@ -246,7 +246,7 @@
                                 </div>
                             </div>
                             <!--Product Quantity -->
-                            <div class="products-add-to-cart mt-3 row">
+                            <div class="products-add-to-cart mt-3 row pl-4">
                                 @if(count($product->stocks))
                                 <div class="input-counter">
                                     <select type="select" class="form-control" name="variant" id="variant" style="top: 5px;height: 50px !important;">
@@ -271,7 +271,7 @@
                                            Wishlist <span class="bx bx-right-arrow-alt float-right"></span></button> -->
 
                                 <button type="button" onclick="addToCart()" class="default-btn  secondary-btn add-to-cart-btn d-md-inline-block d-lg-none"><i class="bx bx-cart-alt"></i></button>
-                                <button type="button" data-quantity="1" data-id="{{ $product->id }}" id="add_to_wishlist_{{ $product->id }}" class="default-btn  primary-btn add-to-cart-btn add_to_wishlist ml-2 d-md-inline-block d-lg-none" style="height: 50px;"><i class="bx bx-heart"></i></button>
+                                <!-- <button type="button" data-quantity="1" data-id="{{ $product->id }}" id="add_to_wishlist_{{ $product->id }}" class="default-btn  primary-btn add-to-cart-btn add_to_wishlist ml-2 d-md-inline-block d-lg-none" style="height: 50px;"><i class="bx bx-heart"></i></button> -->
                             </div>
 
                             <!-- Product Descriptions -->
@@ -1160,7 +1160,6 @@
                 url: '{{ route("variant_price") }}',
                 data: $('#add-to-cart-form').serializeArray(),
                 success: function(data) {
-                    
                     $('#add-to-cart-form #chosen_price_div').removeClass('d-none');
                     $('#add-to-cart-form #chosen_price_div .chosen_price').html(data.price);
                     $('#available-quantity').html(data.quantity);

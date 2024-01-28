@@ -292,10 +292,10 @@ class ProductManagerController extends Controller
         }
 
 
-        $color_id = Attribute::where('has_color', 1)->first()->id;
-        $product_colors_values = ProductAttributeValue::where('attribute_id', $color_id)->pluck('attribute_value_id');
-        $attribute_with_color = AttributeValue::whereIn('id', $product_colors_values)->get();
-
+        // $color_id = Attribute::where('has_color', 1)->first()->id;
+        // $product_colors_values = ProductAttributeValue::where('attribute_id', $color_id)->pluck('attribute_value_id');
+        // $attribute_with_color = AttributeValue::whereIn('id', $product_colors_values)->get();
+        $attribute_with_color = [];
 
         if ($min_price != null && $max_price != null) {
             $products = $products->where('purchase_price', '>=', $min_price)->where('purchase_price', '<=', $max_price);
@@ -307,8 +307,7 @@ class ProductManagerController extends Controller
             $view = 'frontend.pages.product.products';
         }
         return view($view, compact('products', 'sortBy', 'perpage', 'query','breadcrumb','min_price','max_price', 'attributes',
-            'selected_attribute_values',
-            'attribute_with_color'));
+            'selected_attribute_values','attribute_with_color'));
     }
 
     public function viewAllProducts(Request $request,$key){

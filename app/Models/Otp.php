@@ -20,6 +20,7 @@ class Otp extends Authenticatable
     protected $fillable = [
         'user_id',
         'otp',
+        'mobile_number',
         'created_at'
     ];
 

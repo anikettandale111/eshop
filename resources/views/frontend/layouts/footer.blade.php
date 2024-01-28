@@ -1,3 +1,4 @@
+@if(Helper::isDeviceMobile() == false)
 <footer class="footer-area">
   <div class="footer-menu-area py-5">
     <div class="container">
@@ -23,7 +24,6 @@
                 <li><a href="{{route('frontend.return.policy')}}">Return Policy</a></li>
                 <li><a href="{{route('frontend.privacy.policy')}}">Privacy Policy</a></li>
                 <li><a href="{{route('frontend.terms.conditions')}}">Terms and Conditions</a></li>
-
               </ul>
             </div>
           </div>
@@ -86,10 +86,10 @@
     </div>
   </div>
   <div class="footer-copyright">
-    <p>{{get_settings('copyright_text')}} </p>
+    <p>© Copyrights {{date('Y')}}. All rights reserved.  </p>
   </div>
 </footer>
-
+@endif
 @section('scripts')
 
 {{--Subscriber--}}

@@ -130,32 +130,29 @@ class CheckoutController extends Controller
             $orderController = new OrderController;
             $orderController->store($request);
             if ($request->session()->get('order_id')) {
-                if ($request->input('payment_method') == 'paypal') {
-                    $paypal = new PaypalController;
-                    return $paypal->getCheckout();
-                } elseif ($request->input('payment_method') == 'stripe') {
-                    $this->payWithStripe($request->input('stripeToken'));
-                } elseif ($request->input('payment_method') == 'razor') {
+                // if ($request->input('payment_method') == 'paypal') {
+                //     $paypal = new PaypalController;
+                //     return $paypal->getCheckout();
+                // } elseif ($request->input('payment_method') == 'stripe') {
+                //     $this->payWithStripe($request->input('stripeToken'));
+                // } else
+                if ($request->input('payment_method') == 'razor') {
                     $razor = new RazorpayController;
                     return $razor->razorpay();
                 } elseif ($request->payment_method == 'cod') {
-
                     $order = Order::findOrFail($request->session()->get('order_id'));
                     $array['view'] = 'mail.invoice';
                     $array['subject'] = 'Your order has been placed -' . $order['order_number'];
                     $array['admin_subject'] = 'You have new order from -' . $order['order_number'];
                     $array['from'] = env('MAIL_FROM_ADDRESS', 'info@ketramart.com');
                     $array['order'] = $order;
-
                     if (env('MAIL_USERNAME') != null) {
                         try {
                             Mail::to($order['email'])->send(new OrderMail($array));
-
                             Mail::to(Admin::first()->email)->send(new OrderMailAdmin($array));
                         } catch (\Exception $e) {
                         }
                     }
-
                     session()->forget('cart');
                     session()->forget('comment');
                     session()->forget('coupon_code');
@@ -207,20 +204,18 @@ class CheckoutController extends Controller
         if ($status) {
             $array['view'] = 'mail.invoice';
             $array['subject'] = 'Your order has been placed -' . $order['order_number'];
-            $array['from'] = env('MAIL_FROM_ADDRESS', 'info@ketramart.com');
+            $array['from'] = env('MAIL_FROM_ADDRESS', 'info@machiwala.co.in');
             $array['admin_subject'] = 'You have new order from -' . $order['order_number'];
             $array['order'] = $order;
 
             if (env('MAIL_USERNAME')) {
                 try {
                     Mail::to($order['email'])->send(new OrderMail($array));
-
                     Mail::to(Admin::first()->email)->send(new OrderMailAdmin($array));
                 } catch (\Exception $e) {
                     return back()->with('error', $e->getMessage());
                 }
             }
-
             session()->forget('cart');
             session()->forget('comment');
             session()->forget('coupon_code');

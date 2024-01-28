@@ -126,5 +126,10 @@ Route::get('order-confirmed', function () {
     return view('frontend.pages.checkout.complete', compact('order'));
 })->name('order.complete');
 
+// Send OTP
+Route::post('send-otp', [\App\Http\Controllers\Frontend\IndexController::class, 'sendOTP']);
+Route::post('verify-otp', [\App\Http\Controllers\Frontend\IndexController::class, 'verifyOTP']);
+
+
 //Invoice Created
 Route::get('invoice/{order_id}', [\App\Http\Controllers\OrderController::class, 'invoiceDownload'])->name('invoice.download');

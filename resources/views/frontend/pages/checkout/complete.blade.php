@@ -117,6 +117,7 @@
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
+                                                                @php $disc = 0; @endphp
                                                                 @foreach ($order->orderDetails as $key => $orderDetail)
                                                                     <tr>
                                                                         <td>{{ $loop->iteration }}</td>
@@ -132,11 +133,13 @@
                                                                             @php
                                                                                 $Ptitle = $orderDetail->product['title'];
                                                                                 $variation = $orderDetail['variation'];
+                                                                                $variant = $orderDetail['variant'];
+                                                                                $disc += $orderDetail['discount'];
                                                                             @endphp
                                                                             <a
                                                                                 href="{{ route('product.detail', $orderDetail->product['slug']) }}">{{ ucfirst($Ptitle) }}</a>
                                                                         </td>
-                                                                        <td>{{$variation}}</td>
+                                                                        <td>{{$variant}}</td>
                                                                         <td class="product-quantity">
                                                                             {{ $orderDetail->quantity }}</td>
                                                                         <td class="product-price">
@@ -195,9 +198,9 @@
                                                             </li>
 
                                                             <li class="charges ">
-                                                                <span class="key">Coupon Discount:</span>
+                                                                <span class="key">Discount:</span>
                                                                 <span
-                                                                    class="value">{{ Helper::currency_converter($order->coupon) }}</span>
+                                                                    class="value">{{ Helper::currency_converter($order->coupon + $disc) }}</span>
                                                             </li>
 
                                                             <li class="charges">
@@ -209,7 +212,7 @@
                                                             <li class="grand-total">
                                                                 <span class="key">GRAND TOTAL:</span>
                                                                 <span
-                                                                    class="value">{{ Helper::currency_converter($order->total_amount) }}</span>
+                                                                    class="value">{{ Helper::currency_converter($order->total_amount-$disc) }}</span>
                                                             </li>
                                                         </ul>
                                                     </div>
