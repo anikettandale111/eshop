@@ -80,7 +80,7 @@
                                                     <tbody>
                                                         @php $disc = 0; @endphp
                                                         @foreach($order->orderDetails as $item)
-                                                        @php $disc += $orderDetail['discount']; @endphp
+                                                        @php $disc += $item['discount']; @endphp
                                                         <tr>
                                                             <td>{{$loop->iteration}}</td>
                                                             <td>
