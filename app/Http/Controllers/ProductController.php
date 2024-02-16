@@ -761,7 +761,18 @@ class ProductController extends Controller
     }
     public function priceList()
     {
-        $product = Product::orderBy('id', 'DESC')->get();
+        $product = Product::with('stocks')->orderBy('products.id', 'DESC')->get();
         return view('backend.product.price_update', compact('product'));
+    }
+    public function priceUpdate(Request $request)
+    {
+        foreach ($request->prod_ids as $key => $pr) {
+            Product::where('id', $pr)->update(['unit_price' => $request->product_unit_price[$key], 'purchase_price' => $request->product_purchase_price[$key]]);
+        }
+        foreach ($request->stocks_ids as $k => $st) {
+            ProductStock::where('id', $st)->update(['price' => $request->stocks_price[$k]]);
+        }
+        $notify[] = ['success', 'Product Price Updated!'];
+        return back()->withNotify($notify);
     }
 }
