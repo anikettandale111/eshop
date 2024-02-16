@@ -609,6 +609,9 @@ class APIController extends Controller
         }
         return response()->json(['status' => 201, 'message' => 'Somthing is Missing, Please try again'], 200);
     }
+    public function deleteUser(Request $request){
+        return response()->json(['status' => 200, 'message' => 'Your Account Deleted Successfully .'], 200);
+    }
     public function addUpdateaddress(Request $request, $id = '')
     {
         $user_id = Auth::user()->id;

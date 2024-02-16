@@ -60,6 +60,8 @@ Route::group(['middleware' => ['auth:api']], function () {
     Route::post('checkout', [\App\Http\Controllers\Api\APIController::class, 'checkoutStore']);
     // Update Order Status
     Route::post('order-status-update', [\App\Http\Controllers\Api\APIController::class, 'orderStatusUpdate']);
+    // Delete User 
+    Route::post('delete_user', [\App\Http\Controllers\Api\APIController::class, 'deleteUser']);
 });
 
 //product review

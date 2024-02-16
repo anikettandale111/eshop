@@ -68,6 +68,7 @@ Route::group(['prefix' => 'dashboard', 'middleware' => ['admin']], function () {
     Route::post('product_status', [\App\Http\Controllers\ProductController::class, 'productStatus'])->name('product.status');
     Route::post('product_featured', [\App\Http\Controllers\ProductController::class, 'productFeatured'])->name('product.featured');
     Route::post('sku-combination', [\App\Http\Controllers\ProductController::class, 'sku_combination'])->name('product.sku-combination');
+    Route::get('product/price', [\App\Http\Controllers\ProductController::class, 'priceList'])->name('product.price');
 
     Route::delete('product-delete-all', [\App\Http\Controllers\ProductController::class, 'deleteAll'])->name('product.delete.all');
 
