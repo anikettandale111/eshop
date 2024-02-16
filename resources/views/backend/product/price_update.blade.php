@@ -29,6 +29,20 @@
                                 <form action="{{route('product.price.update')}}" method="post">
                                     @csrf
                                     <div class="card-body">
+                                        <div class="row mb-4">
+                                            <div class="col-1">
+                                                <label type="text" class="form-control" >Sr.No.</label>
+                                            </div>
+                                            <div class="col-5">
+                                                <label type="text" class="form-control" >Product Name</label>
+                                            </div>
+                                            <div class="col-3">
+                                                <label type="text" class="form-control" >Purchase Price/Unit Type</label>
+                                            </div>
+                                            <div class="col-3">
+                                                <label type="text" class="form-control" >Selling Price</label>
+                                            </div>
+                                        </div>
                                         @foreach($product AS $key => $prod)
                                         <div class="row mb-4">
                                             <div class="col-1">
